@@ -1,0 +1,11 @@
+version: '3.5'
+
+services:
+    backend:
+      ports:
+          - "80:80"
+      build: .
+      volumes:
+          - .:/var/www/html
+      command: php -S 0.0.0.0:80 -t public
+      restart: always
