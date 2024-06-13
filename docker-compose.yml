@@ -1,11 +1,37 @@
 version: '3.5'
 
 services:
-    backend:
-      ports:
-          - "80:80"
-      build: .
-      volumes:
-          - .:/var/www/html
-      command: php -S 0.0.0.0:80 -t public
-      restart: always
+  backend:
+    ports:
+      - "80:80"
+    build: .
+    volumes:
+      - .:/var/www/html
+    command: php -S 0.0.0.0:80 -t public
+    restart: always
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - flights
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./database/mysql:/var/lib/mysql/
+    networks:
+      - flights
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}" ]
+      retries: 3
+      timeout: 5s
+networks:
+  flights:
+    driver: bridge
