@@ -12,5 +12,5 @@ $app = AppFactory::create();
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true, Container::logger());
 
-$app->get('/', MainController::class);
+$app->get('/bot', MainController::class);
 $app->run();
