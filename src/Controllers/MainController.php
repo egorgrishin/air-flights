@@ -11,9 +11,7 @@ class MainController
 {
     public function __invoke(Request $request, Response $response, $args): Response
     {
-        Container::logger()->debug(json_encode([
-            $request->getParsedBody(), $request->getQueryParams()
-        ], JSON_PRETTY_PRINT));
+        Container::logger()->debug(json_encode($request->getParsedBody(), JSON_PRETTY_PRINT));
         $response->getBody()->write("Hello world!");
         return $response;
     }
