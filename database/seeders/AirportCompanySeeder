@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Core\Container;
 
 require __DIR__ . '/../../vendor/autoload.php';
-Container::init();
 
 const COMPANIES = [
     ['title' => 'Победа', 'file' => 'pobeda.json'],
@@ -23,7 +22,7 @@ function createCompany(array $company): int
 function createAirport(array $airport): void
 {
     $pdo = Container::pdo();
-    $statement = $pdo->prepare('INSERT INTO airports (code, city_code, title) VALUES (:iataCode, :metropolitanCode, :name)');
+    $statement = $pdo->prepare('INSERT INTO airports (code, city_code, sort, title) VALUES (:iataCode, :metropolitanCode, :sort, :name)');
     $statement->execute($airport);
 }
 

@@ -23,6 +23,9 @@ final class Env
         $file = fopen($path, 'r');
         while (($string = fgets($file)) !== false) {
             $string = trim($string);
+            if (empty($string)) {
+                continue;
+            }
             [$key, $value] = explode('=', $string, 2);
             $this->params[$key] = $value;
         }
