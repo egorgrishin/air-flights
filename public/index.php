@@ -1,9 +1,16 @@
 <?php
+declare(strict_types=1);
 
-use App\Kernel;
+use App\Controllers\MainController;
+use App\Core\Container;
+use Slim\Factory\AppFactory;
 
-require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-return function (array $context) {
-    return new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
-};
+Container::init();
+$app = AppFactory::create();
+
+$errorMiddleware = $app->addErrorMiddleware(true, true, true, Container::logger());
+
+$app->get('/', MainController::class);
+$app->run();
