@@ -3,17 +3,19 @@ declare(strict_types=1);
 
 namespace App;
 
+use DateTime;
 use GuzzleHttp\Client;
 
 class SmartaviaSearch
 {
-    public function run()
+    public function run(DateTime $dateTime)
     {
+        $date = $dateTime->format('Y-m-d');
         $params = [
             'origin'              => 'LED',
             'destination'         => 'CEK',
-            'calendar_date_start' => '2024-06-15',
-            'calendar_date_end'   => '2024-06-15',
+            'calendar_date_start' => $date,
+            'calendar_date_end'   => $date,
         ];
         $body = $this->toBody($params);
 
@@ -36,7 +38,7 @@ class SmartaviaSearch
         }
 
         // Может быть 0
-        dd('Smartavia, СПБ-ЧЛБ, 15.06, от ' . $this->parse($data, $params));
+        dd("Smartavia, СПБ-ЧЛБ, $date, от " . $this->parse($data, $params));
     }
 
     private function toBody(array $params): string

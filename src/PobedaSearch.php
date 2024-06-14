@@ -3,19 +3,21 @@ declare(strict_types=1);
 
 namespace App;
 
+use DateTime;
 use GuzzleHttp\Client;
 
 class PobedaSearch
 {
-    public function run()
+    public function run(DateTime $dateTime)
     {
+        $date = $dateTime->format('d.m.Y');
         $uri = 'https://ticket.pobeda.aero/websky/json/search-variants-mono-brand-cartesian';
         $client = new Client();
         $response = $client->post($uri, [
             'form_params' => [
                 'searchGroupId'         => 'standard',
                 'segmentsCount'         => 1,
-                'date'                  => ['15.06.2024'],
+                'date'                  => [$date],
                 'origin-city-code'      => ['LED'],
                 'destination-city-code' => ['CEK'],
                 'adultsCount'           => 1,
@@ -38,8 +40,7 @@ class PobedaSearch
             return;
         }
 
-        dump($data);
-        dump('Победа, СПБ-ЧЛБ, 15.06, от ' . $this->parse($data));
+        dump("Победа, СПБ-ЧЛБ, $date, от " . $this->parse($data));
     }
 
     private function parse(array $data)
