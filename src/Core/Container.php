@@ -11,20 +11,32 @@ use PDO;
 
 final class Container
 {
-    private static Env $env;
-    private static PDO $pdo;
-    private static Logger $logger;
-    private static bool $isInitialized = false;
+    private static ?Env $env = null;
+    private static ?PDO $pdo = null;
+    private static ?Logger $logger = null;
 
-    public static function init(): void
+    public static function pdo(): PDO
     {
-        if (self::$isInitialized) {
-            return;
+        if (self::$pdo === null) {
+            self::$pdo = DB::getPdo();
         }
-        self::$env = new Env();
-        self::$pdo = DB::getPdo();
-        self::setLogger();
-        self::$isInitialized = true;
+        return self::$pdo;
+    }
+
+    public static function env(): Env
+    {
+        if (self::$env === null) {
+            self::$env = new Env();
+        }
+        return self::$env;
+    }
+
+    public static function logger(): Logger
+    {
+        if (self::$logger === null) {
+            self::setLogger();
+        }
+        return self::$logger;
     }
 
     private static function setLogger(): void
@@ -40,20 +52,5 @@ final class Container
         ));
         $logger->pushHandler($handler);
         self::$logger = $logger;
-    }
-
-    public static function pdo(): PDO
-    {
-        return self::$pdo;
-    }
-
-    public static function env(): Env
-    {
-        return self::$env;
-    }
-
-    public static function logger(): Logger
-    {
-        return self::$logger;
     }
 }
