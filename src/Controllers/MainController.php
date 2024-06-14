@@ -16,13 +16,13 @@ class MainController
 {
     public function __invoke(Request $request, Response $response, $args): Response
     {
-        $message = new Message($request);
-        if ($message->text === '/start') {
-            $this->sendHello($message);
-        } elseif ($message->text === 'Начать мониторинг') {
-            $this->sendMonit($message);
-        }
-//        Container::logger()->debug(json_encode($request->getParsedBody(), JSON_PRETTY_PRINT));
+        Container::logger()->debug(json_encode($request->getParsedBody(), JSON_PRETTY_PRINT));
+//        $message = new Message($request);
+//        if ($message->text === '/start') {
+//            $this->sendHello($message);
+//        } elseif ($message->text === 'Начать мониторинг') {
+//            $this->sendMonit($message);
+//        }
         $response->getBody()->write("Hello world!");
         return $response;
     }
