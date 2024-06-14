@@ -1,0 +1,59 @@
+#!/usr/bin/php
+<?php
+declare(strict_types=1);
+
+use App\Core\Container;
+
+require __DIR__ . '/../../vendor/autoload.php';
+Container::init();
+
+const COMPANIES = [
+    ['title' => 'Победа', 'file' => 'pobeda.json'],
+    ['title' => 'Smartavia', 'file' => 'smartavia.json'],
+];
+
+function createCompany(array $company): int
+{
+    $pdo = Container::pdo();
+    $statement = $pdo->prepare('INSERT INTO companies (title) VALUES (?)');
+    $statement->execute([$company['title']]);
+    return (int) $pdo->lastInsertId();
+}
+
+function createAirport(array $airport): void
+{
+    $pdo = Container::pdo();
+    $statement = $pdo->prepare('INSERT INTO airports (code, city_code, title) VALUES (:iataCode, :metropolitanCode, :name)');
+    $statement->execute($airport);
+}
+
+function attachCompanyToAirport(int $companyId, string $airportCode): void
+{
+    $pdo = Container::pdo();
+    $statement = $pdo->prepare('INSERT INTO airport_company (airport_code, company_id) VALUES (?, ?)');
+    $statement->execute([$airportCode, $companyId]);
+}
+
+function getAirports(string $file): array
+{
+    return json_decode(
+        file_get_contents(__DIR__ . "/data/airports/$file"),
+        true
+    );
+}
+
+$pdo = Container::pdo();
+$pdo->beginTransaction();
+$airports = [];
+foreach (COMPANIES as $company) {
+    $companyId = createCompany($company);
+    $companyAirports = getAirports($company['file']);
+    foreach ($companyAirports as $airport) {
+        if (empty($airports[$airport['iataCode']])) {
+            createAirport($airport);
+            $airports[$airport['iataCode']] = true;
+        }
+        attachCompanyToAirport($companyId, $airport['iataCode']);
+    }
+}
+$pdo->commit();

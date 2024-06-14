@@ -42,6 +42,11 @@ final class Container
         self::$logger = $logger;
     }
 
+    public static function pdo(): PDO
+    {
+        return self::$pdo;
+    }
+
     public static function env(): Env
     {
         return self::$env;
