@@ -1,12 +1,6 @@
-/database/mysql
+/.idea/
 /.env
 /composer.lock
-###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
-/vendor/
-###< symfony/framework-bundle ###
+/database/mysql
+/var
+/vendor
