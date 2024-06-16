@@ -5,6 +5,7 @@ namespace App\Handlers;
 
 use App\Contracts\DtoContract;
 use App\Contracts\HandlerContract;
+use App\Core\Container;
 use App\Core\Telegram;
 use App\Repositories\AirportRepository;
 
@@ -25,9 +26,13 @@ final class DepNavigationHandler implements HandlerContract
 
     public function process(DtoContract $dto): void
     {
-        Telegram::send('answerCallbackQuery', [
-            'callback_query_id' => $dto->callbackQueryId,
-        ]);
+        try {
+            Telegram::send('answerCallbackQuery', [
+                'callback_query_id' => $dto->callbackQueryId,
+            ]);
+        } catch (\Throwable $exception) {
+            Container::logger()->error('Cannot answer');
+        }
 
         $method = $this->getMethod($dto->data);
         $data = $this->getMessageData($dto->data);
