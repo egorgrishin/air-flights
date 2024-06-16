@@ -23,7 +23,7 @@ final class StartMonitoringHandler implements HandlerContract
             $airport = [
                 [
                     'text'          => $airport->title,
-                    'callback_data' => "sel_dep:$airport->code:>:0",
+                    'callback_data' => "sel_arr:$airport->code:>:0",
                 ],
             ];
         }
