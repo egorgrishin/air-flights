@@ -20,7 +20,7 @@ final class DepNavigationHandler implements HandlerContract
     public static function validate(DtoContract $dto): bool
     {
         return $dto->data === 'Начать мониторинг'
-            && preg_match('/^sel_dep:[<>]:\d+$/', $dto->data) === 1;
+            || preg_match('/^sel_dep:[<>]:\d+$/', $dto->data) === 1;
     }
 
     public function process(DtoContract $dto): void
