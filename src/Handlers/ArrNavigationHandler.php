@@ -37,7 +37,7 @@ final class ArrNavigationHandler implements HandlerContract
             $airport = [
                 [
                     'text'          => $airport->title,
-                    'callback_data' => "sel_month:$dep:$airport->code",
+                    'callback_data' => "sel_date:$dep:$airport->code",
                 ],
             ];
         }

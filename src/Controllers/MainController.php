@@ -8,10 +8,11 @@ use App\Factory;
 use App\Handlers\ArrNavigationHandler;
 use App\Handlers\DateDayHandler;
 use App\Handlers\DateMonthHandler;
-use App\Handlers\FinalHandler;
+use App\Handlers\AcceptHandler;
 use App\Handlers\StartHandler;
 use App\Handlers\StartMonitoringHandler;
 use App\Handlers\DepNavigationHandler;
+use App\Handlers\SuccessHandler;
 use Exception;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -38,8 +39,12 @@ class MainController
             (new DateMonthHandler())->process($dto);
         } elseif (DateDayHandler::validate($dto)) {
             (new DateDayHandler())->process($dto);
-        } elseif (FinalHandler::validate($dto)) {
-            (new FinalHandler())->process($dto);
+        } elseif (AcceptHandler::validate($dto)) {
+            (new AcceptHandler())->process($dto);
+        } elseif (SuccessHandler::validate($dto)) {
+            (new SuccessHandler())->process($dto);
+        } else {
+            Container::logger()->error('NOOOOOOOO');
         }
 
         $response->getBody()->write("Hello world!");

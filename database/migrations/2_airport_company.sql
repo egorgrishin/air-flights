@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS airport_company
     PRIMARY KEY (airport_code, company_id),
     FOREIGN KEY (airport_code) REFERENCES airports (code),
     FOREIGN KEY (company_id) REFERENCES companies (id)
-)
+);

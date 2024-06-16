@@ -28,7 +28,7 @@ final class DateDayHandler implements HandlerContract
             $day = $i + 1;
             $buttons[$ind][] = [
                 'text' => $day,
-                'callback_data' => "sel_fin:$data:$day",
+                'callback_data' => "sel_acc:$data:$day",
             ];
         }
 

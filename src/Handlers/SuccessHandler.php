@@ -9,11 +9,11 @@ use App\Core\Telegram;
 use App\Repositories\AirportRepository;
 use App\VO\Airport;
 
-final class FinalHandler implements HandlerContract
+final class SuccessHandler implements HandlerContract
 {
     public static function validate(DtoContract $dto): bool
     {
-        return preg_match('/^sel_fin:[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}:\d{1,2}$/', $dto->data) === 1;
+        return preg_match('/^suc:[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}:\d{1,2}$/', $dto->data) === 1;
     }
 
     public function process(DtoContract $dto): void
@@ -30,14 +30,9 @@ final class FinalHandler implements HandlerContract
         $arrAirport = array_values(
             array_filter($airports, fn (Airport $airport) => $airport->code === $arr)
         )[0];
-        $buttons = [
-            [
-                'text' => 'Подтвердить',
-                'callback_data' => "suc:$dep:$arr:$month:$year:$day",
-            ]
-        ];
 
         $text = <<<TEXT
+Мониторинг успешно активирован!
 Город отправления $depAirport->title ($depAirport->code)
 Город прибытия $arrAirport->title ($arrAirport->code)
 Дата вылета $day.$month.$year
@@ -48,11 +43,6 @@ TEXT;
             'chat_id'      => $dto->fromId,
             'message_id'   => $dto->messageId,
             'text'         => $text,
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    $buttons,
-                ],
-            ],
         ]);
     }
 }
