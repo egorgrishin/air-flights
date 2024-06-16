@@ -25,6 +25,7 @@ final class DepNavigationHandler implements HandlerContract
 
     public function process(DtoContract $dto): void
     {
+        $method = $this->getMethod($dto->data);
         $data = $this->getMessageData($dto->data);
         [$start, $end] = $this->getIndexes($data, count($this->airports));
 
@@ -32,7 +33,7 @@ final class DepNavigationHandler implements HandlerContract
         $navButtons = $this->getNavigationButtons($start, $end);
 
 
-        Telegram::send('editMessageText', [
+        Telegram::send($method, [
             'chat_id'      => $dto->fromId,
             'message_id'   => $dto->messageId,
             'text'         => "Выберите аэропорт отправления",
@@ -43,6 +44,13 @@ final class DepNavigationHandler implements HandlerContract
                 ],
             ],
         ]);
+    }
+
+    private function getMethod(string $data): string
+    {
+        return $data === 'Начать мониторинг'
+            ? 'sendMessage'
+            : 'editMessageText';
     }
 
     private function getMessageData(string $data): string
