@@ -4,7 +4,8 @@
     "slim/slim": "4.*",
     "slim/psr7": "^1.7",
     "ext-pdo": "*",
-    "monolog/monolog": "^3.6"
+    "monolog/monolog": "^3.6",
+    "ext-calendar": "*"
   },
   "autoload": {
     "psr-4": {
