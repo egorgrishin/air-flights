@@ -9,7 +9,7 @@ final readonly class CallbackDto implements DtoContract
 {
     public int $fromId;
     public int $messageId;
-    public int $callbackQueryId;
+    public string $callbackQueryId;
     public string $data;
 
     public function __construct(array $body)
