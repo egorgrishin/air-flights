@@ -25,6 +25,10 @@ final class DepNavigationHandler implements HandlerContract
 
     public function process(DtoContract $dto): void
     {
+        Telegram::send('answerCallbackQuery', [
+            'callback_query_id' => $dto->callbackQueryId,
+        ]);
+
         $method = $this->getMethod($dto->data);
         $data = $this->getMessageData($dto->data);
         [$start, $end] = $this->getIndexes($data, count($this->airports));

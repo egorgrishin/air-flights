@@ -32,6 +32,7 @@ class Factory
         return !empty($body['callback_query'])
             && !empty($body['callback_query']['from']['id'])
             && !empty($body['callback_query']['data'])
-            && !empty($body['callback_query']['message']['message_id']);
+            && !empty($body['callback_query']['message']['message_id'])
+            && !empty($body['callback_query']['id']);
     }
 }
