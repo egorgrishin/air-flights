@@ -10,7 +10,6 @@ use App\Handlers\DateDayHandler;
 use App\Handlers\DateMonthHandler;
 use App\Handlers\AcceptHandler;
 use App\Handlers\StartHandler;
-use App\Handlers\StartMonitoringHandler;
 use App\Handlers\DepNavigationHandler;
 use App\Handlers\SuccessHandler;
 use Exception;
@@ -29,8 +28,6 @@ class MainController
 
         if (StartHandler::validate($dto)) {
             (new StartHandler())->process($dto);
-        } elseif (StartMonitoringHandler::validate($dto)) {
-            (new StartMonitoringHandler())->process($dto);
         } elseif (DepNavigationHandler::validate($dto)) {
             (new DepNavigationHandler())->process($dto);
         } elseif (ArrNavigationHandler::validate($dto)) {
