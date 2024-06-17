@@ -45,7 +45,7 @@ final readonly class ArrNavigationHandler extends Handler
     protected function parseDto(DtoContract $dto): void
     {
         [, $this->dep, $sign, $index] = explode(':', $dto->data);
-        $this->start = $sign === '>' ? $index : ($index - 5);
+        $this->start = (int) ($sign === '>' ? $index : ($index - 5));
         $this->end = $this->start + 5;
     }
 

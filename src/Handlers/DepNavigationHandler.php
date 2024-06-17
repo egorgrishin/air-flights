@@ -42,7 +42,7 @@ final readonly class DepNavigationHandler extends Handler
     {
         $data = $dto->data === '/new' ? 'sel_dep:>:5' : $dto->data;
         [, $sign, $index] = explode(':', $data);
-        $this->start = $sign === '>' ? $index : ($index - 5);
+        $this->start = (int) ($sign === '>' ? $index : ($index - 5));
         $this->end = $this->start + 5;
     }
 
