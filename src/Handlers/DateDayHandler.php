@@ -36,6 +36,7 @@ final readonly class DateDayHandler extends Handler
     {
         $data = explode(':', $dto->data);
         [
+            ,
             $this->dep,
             $this->arr,
             $this->month,
