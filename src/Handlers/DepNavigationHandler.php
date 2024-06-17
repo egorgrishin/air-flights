@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
-use App\Enums\TelegramMethod;
 use App\Handler;
 use App\Repositories\AirportRepository;
 
@@ -81,16 +80,13 @@ final readonly class DepNavigationHandler extends Handler
 
     private function getMessageData(array $buttons): array
     {
-        $data = [
+        return [
+            'chat_id'      => $this->fromId,
+            'message_id'   => $this->messageId,
             'text'         => "Выберите аэропорт отправления",
             'reply_markup' => [
                 'inline_keyboard' => $buttons,
             ],
         ];
-        if ($this->method === TelegramMethod::Edit) {
-            $data['chat_id'] = $this->fromId;
-            $data['message_id'] = $this->messageId;
-        }
-        return $data;
     }
 }
