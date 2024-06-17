@@ -61,6 +61,7 @@ final readonly class AcceptHandler extends Handler
         $text = '';
         if ($this->state === 'suc') {
             $text .= "Мониторинг успешно активирован!\n";
+        } else {
             $data['reply_markup'] = [
                 'inline_keyboard' => [
                     $this->getSuccessButton(),
