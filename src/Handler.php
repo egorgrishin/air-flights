@@ -23,7 +23,7 @@ abstract readonly class Handler
 
         if ($dto instanceof CallbackDto) {
             $this->telegram->send(TelegramMethod::SendAnswer, [
-                'callbackQueryId' => $dto->callbackQueryId,
+                'callback_query_id' => $dto->callbackQueryId,
             ]);
 
             $this->method = TelegramMethod::Edit;
