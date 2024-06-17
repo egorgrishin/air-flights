@@ -39,7 +39,7 @@ final readonly class DepNavigationHandler extends Handler
 
     protected function parseDto(DtoContract $dto): void
     {
-        $data = $dto->data === '/new' ? 'sel_dep:>:5' : $dto->data;
+        $data = $dto->data === '/new' ? 'sel_dep:>:0' : $dto->data;
         [, $sign, $index] = explode(':', $data);
         $this->start = (int) ($sign === '>' ? $index : ($index - 5));
         $this->end = $this->start + 5;
