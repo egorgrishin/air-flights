@@ -48,7 +48,7 @@ final readonly class DateMonthHandler extends Handler
     protected function parseDto(DtoContract $dto): void
     {
         $data = explode(':', $dto->data);
-        [$this->dep, $this->arr] = $data;
+        [, $this->dep, $this->arr] = $data;
     }
 
     private function getButtons(): array
