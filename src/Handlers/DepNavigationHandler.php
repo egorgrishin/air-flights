@@ -4,111 +4,93 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
-use App\Contracts\HandlerContract;
-use App\Core\Container;
-use App\Core\Telegram;
+use App\Enums\TelegramMethod;
+use App\Handler;
 use App\Repositories\AirportRepository;
 
-final class DepNavigationHandler implements HandlerContract
+final readonly class DepNavigationHandler extends Handler
 {
-    private array $airports;
+    private AirportRepository $repository;
+    private int $start;
+    private int $end;
 
-    public function __construct()
+    public function __construct(DtoContract $dto)
     {
-        $this->airports = (new AirportRepository())->getAll();
+        $this->repository = new AirportRepository();
+        parent::__construct($dto);
     }
 
     public static function validate(DtoContract $dto): bool
     {
-        return $dto->data === 'Начать мониторинг'
+        return $dto->data === '/new'
             || preg_match('/^sel_dep:[<>]:\d+$/', $dto->data) === 1;
     }
 
-    public function process(DtoContract $dto): void
+    public function process(): void
     {
-        try {
-            Telegram::send('answerCallbackQuery', [
-                'callback_query_id' => $dto->callbackQueryId,
-            ]);
-        } catch (\Throwable $exception) {
-            Container::logger()->error('Cannot answer');
-        }
+        $airports = $this->repository->getAll();
+        $airportButtons = $this->getAirportButtons($airports);
+        $navButtons = $this->getNavigationButtons(count($airports));
 
-        $method = $this->getMethod($dto->data);
-        $data = $this->getMessageData($dto->data);
-        [$start, $end] = $this->getIndexes($data, count($this->airports));
-
-        $airportButtons = $this->getAirportButtons($start, $end);
-        $navButtons = $this->getNavigationButtons($start, $end);
-
-
-        Telegram::send($method, [
-            'chat_id'      => $dto->fromId,
-            'message_id'   => $dto->messageId,
-            'text'         => "Выберите аэропорт отправления",
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    ...$airportButtons,
-                    $navButtons,
-                ],
-            ],
-        ]);
+        $this->telegram->send(
+            $this->method,
+            $this->getMessageData([...$airportButtons, $navButtons]),
+        );
     }
 
-    private function getMethod(string $data): string
+    protected function parseDto(DtoContract $dto): void
     {
-        return $data === 'Начать мониторинг'
-            ? 'sendMessage'
-            : 'editMessageText';
-    }
-
-    private function getMessageData(string $data): string
-    {
-        return $data === 'Начать мониторинг'
-            ? 'sel_dep:>:5'
-            : $data;
-    }
-
-    private function getIndexes(string $data, int $airportsCount): array
-    {
+        $data = $dto->data === '/new' ? 'sel_dep:>:5' : $dto->data;
         [, $sign, $index] = explode(':', $data);
-        $index = (int) $index;
-
-        return $sign === '>'
-            ? [$index, min($airportsCount, $index + 5)]
-            : [max(0, $index - 5), $index];
+        $this->start = $sign === '>' ? $index : ($index - 5);
+        $this->end = $this->start + 5;
     }
 
-    private function getNavigationButtons(int $start, int $end): array
+    private function getAirportButtons(array $airports): array
     {
-        $navButtons = [];
-        if ($start > 0) {
-            $navButtons[] = [
-                'text'          => '<-',
-                'callback_data' => "sel_dep:<:$start",
-            ];
-        }
-        if ($end < count($this->airports)) {
-            $navButtons[] = [
-                'text'          => '->',
-                'callback_data' => "sel_dep:>:$end",
-            ];
-        }
-        return $navButtons;
-    }
-
-    private function getAirportButtons(int $start, int $end): array
-    {
-        $airportButtons = [];
-        $airports = array_slice($this->airports, $start, $end - $start);
+        $buttons = [];
+        $airports = array_slice($airports, max(0, $this->start), $this->end - $this->start);
         foreach ($airports as $airport) {
-            $airportButtons[] = [
+            $buttons[] = [
                 [
                     'text'          => $airport->title,
                     'callback_data' => "sel_arr:$airport->code:>:0",
                 ],
             ];
         }
-        return $airportButtons;
+        return $buttons;
+    }
+
+    private function getNavigationButtons(int $airportsCount): array
+    {
+        $buttons = [];
+        if ($this->start > 0) {
+            $buttons[] = [
+                'text'          => '<-',
+                'callback_data' => "sel_dep:<:$this->start",
+            ];
+        }
+        if ($this->end < $airportsCount) {
+            $buttons[] = [
+                'text'          => '->',
+                'callback_data' => "sel_dep:>:$this->end",
+            ];
+        }
+        return $buttons;
+    }
+
+    private function getMessageData(array $buttons): array
+    {
+        $data = [
+            'text'         => "Выберите аэропорт отправления",
+            'reply_markup' => [
+                'inline_keyboard' => $buttons,
+            ],
+        ];
+        if ($this->method === TelegramMethod::Edit) {
+            $data['chat_id'] = $this->fromId;
+            $data['message_id'] = $this->messageId;
+        }
+        return $data;
     }
 }

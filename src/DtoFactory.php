@@ -6,17 +6,21 @@ namespace App;
 use App\Contracts\DtoContract;
 use App\Dto\CallbackDto;
 use App\Dto\TextDto;
+use Exception;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class Factory
+class DtoFactory
 {
+    /**
+     * @throws Exception
+     */
     public static function make(Request $request): DtoContract
     {
         $body = (array) $request->getParsedBody();
         return match (true) {
             self::isTextMessage($body) => new TextDto($body),
             self::isCallback($body) => new CallbackDto($body),
-            default => throw new \Exception(),
+            default => throw new Exception(),
         };
     }
 

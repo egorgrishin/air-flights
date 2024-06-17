@@ -4,66 +4,88 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
-use App\Contracts\HandlerContract;
-use App\Core\Telegram;
+use App\Handler;
 use App\Repositories\AirportRepository;
 use App\VO\Airport;
 
-final class ArrNavigationHandler implements HandlerContract
+final readonly class ArrNavigationHandler extends Handler
 {
+    private AirportRepository $repository;
+    private string $dep;
+    private int $start;
+    private int $end;
+
+    public function __construct(DtoContract $dto)
+    {
+        $this->repository = new AirportRepository();
+        parent::__construct($dto);
+    }
+
     public static function validate(DtoContract $dto): bool
     {
         return preg_match('/^sel_arr:[A-Z]{3}:[<>]:\d+$/', $dto->data) === 1;
     }
 
-    public function process(DtoContract $dto): void
+    public function process(): void
     {
-        $airports = (new AirportRepository())->getAll();
-        [$dep, $start, $end] = $this->getIndexes($dto->data, count($airports) - 1);
-        $airports = array_values(
-            array_filter($airports, fn (Airport $airport) => $airport->code !== $dep)
-        );
+        $airports = $this->getAirports();
+        $airportButtons = $this->getAirportButtons($airports);
+        $navButtons = $this->getNavigationButtons(count($airports));
 
-        $nav = [];
-        if ($start > 0) {
-            $nav[] = ['text' => '<-', 'callback_data' => "sel_arr:$dep:<:" . $start];
-        }
-        if ($end < count($airports)) {
-            $nav[] = ['text' => '->', 'callback_data' => "sel_arr:$dep:>:" . $end];
-        }
-
-        $airports = array_slice($airports, $start, $end - $start);
-        foreach ($airports as &$airport) {
-            $airport = [
-                [
-                    'text'          => $airport->title,
-                    'callback_data' => "sel_date:$dep:$airport->code",
-                ],
-            ];
-        }
-
-        Telegram::send('editMessageText', [
-            'chat_id'      => $dto->fromId,
-            'message_id'   => $dto->messageId,
+        $this->telegram->send($this->method, [
+            'chat_id'      => $this->fromId,
+            'message_id'   => $this->messageId,
             'text'         => "Выберите аэропорт прибытия",
             'reply_markup' => [
-                'inline_keyboard'   => [
-                    ...$airports,
-                    $nav,
-                ],
-//                'one_time_keyboard' => true,
-//                'resize_keyboard'   => true,
+                'inline_keyboard' => [...$airportButtons, $navButtons],
             ],
         ]);
     }
 
-    private function getIndexes(string $data, int $airportsCount): array
+    protected function parseDto(DtoContract $dto): void
     {
-        [, $dep, $sign, $index] = explode(':', $data);
-        $index = (int) $index;
+        [, $this->dep, $sign, $index] = explode(':', $dto->data);
+        $this->start = $sign === '>' ? $index : ($index - 5);
+        $this->end = $this->start + 5;
+    }
 
-        return $sign === '>'
-            ? [$dep, $index, min($airportsCount, $index + 5)]
-            : [$dep, max(0, $index - 5), $index];
+    private function getAirports(): array
+    {
+        $airports = $this->repository->getAll();
+        $airports = array_filter($airports, fn (Airport $airport) => $airport->code !== $this->dep);
+        return array_values($airports);
+    }
+
+    private function getAirportButtons(array $airports): array
+    {
+        $buttons = [];
+        $airports = array_slice($airports, max(0, $this->start), $this->end - $this->start);
+        foreach ($airports as $airport) {
+            $buttons[] = [
+                [
+                    'text'          => $airport->title,
+                    'callback_data' => "sel_date:$this->dep:$airport->code",
+                ],
+            ];
+        }
+        return $buttons;
+    }
+
+    private function getNavigationButtons(int $airportsCount): array
+    {
+        $buttons = [];
+        if ($this->start > 0) {
+            $buttons[] = [
+                'text'          => '<-',
+                'callback_data' => "sel_arr:$this->dep:<:$this->start",
+            ];
+        }
+        if ($this->end < $airportsCount) {
+            $buttons[] = [
+                'text'          => '->',
+                'callback_data' => "sel_arr:$this->dep:>:$this->end",
+            ];
+        }
+        return $buttons;
     }
 }

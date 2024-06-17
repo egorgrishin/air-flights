@@ -3,31 +3,39 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use App\Enums\TelegramMethod;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
 final class Telegram
 {
-    public static function send(string $method, array $data): void
-    {
-        $uri = self::getUri($method);
+    private Client $client;
 
-//        try {
-            (new Client())->post($uri, [
+    public function __construct()
+    {
+        $this->client = new Client([
+            'base_uri' => $this->getUri(),
+        ]);
+    }
+
+    public function send(TelegramMethod $method, array $data): void
+    {
+        try {
+            $this->client->post($method->value, [
                 'headers' => [
                     'Accept'       => 'application/json',
                     'Content-Type' => 'application/json',
                 ],
-                'json' => $data,
+                'json'    => $data,
             ]);
-//        } catch (GuzzleException $exception) {
-//            Container::logger()->error($exception);
-//        }
+        } catch (GuzzleException $exception) {
+            Container::logger()->error($exception);
+        }
     }
 
-    private static function getUri(string $method)
+    private function getUri(): string
     {
         $token = Container::env()->get('TG_TOKEN');
-        return "https://api.telegram.org/bot$token/$method";
+        return "https://api.telegram.org/bot$token/";
     }
 }
