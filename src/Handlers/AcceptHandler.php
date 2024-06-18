@@ -7,6 +7,7 @@ use App\Contracts\DtoContract;
 use App\Enums\State;
 use App\Handler;
 use App\Repositories\AirportRepository;
+use App\Repositories\SubscriptionsRepository;
 use App\VO\Airport;
 
 final readonly class AcceptHandler extends Handler
@@ -17,6 +18,8 @@ final readonly class AcceptHandler extends Handler
     private string $month;
     private string $year;
     private string $day;
+    private string $formattedMonth;
+    private string $formattedDay;
     private string $prevState;
     private string $successState;
 
@@ -42,6 +45,12 @@ final readonly class AcceptHandler extends Handler
         $data = $this->getMessageData($depAirport, $arrAirport);
 
         $this->telegram->send($this->method, $data);
+        if ($this->state === $this->successState) {
+            (new SubscriptionsRepository())->create(
+                (string) $this->fromId,
+                "$this->year-$this->formattedMonth-$this->formattedDay",
+            );
+        }
     }
 
     protected function parseDto(DtoContract $dto): void
@@ -54,6 +63,8 @@ final readonly class AcceptHandler extends Handler
             $this->year,
             $this->day,
         ] = explode(':', $dto->data);
+        $this->formattedMonth = $this->formatNum($this->month);
+        $this->formattedDay = $this->formatNum($this->day);
     }
 
     private function formatNum(string $num): string
@@ -82,7 +93,7 @@ final readonly class AcceptHandler extends Handler
         $text .= <<<TEXT
 Город отправления $depAirport->title ($depAirport->code)
 Город прибытия $arrAirport->title ($arrAirport->code)
-Дата вылета {$this->formatNum($this->day)}.{$this->formatNum($this->month)}.$this->year
+Дата вылета $this->formattedDay.$this->formattedMonth.$this->year
 TEXT;
         $data['text'] = $text;
         return $data;
