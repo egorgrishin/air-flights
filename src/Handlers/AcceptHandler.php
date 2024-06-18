@@ -82,7 +82,7 @@ final readonly class AcceptHandler extends Handler
         $text .= <<<TEXT
 Город отправления $depAirport->title ($depAirport->code)
 Город прибытия $arrAirport->title ($arrAirport->code)
-Дата вылета $this->day.{$this->formatNum($this->month)}.{$this->formatNum($this->year)}
+Дата вылета {$this->formatNum($this->day)}.{$this->formatNum($this->month)}.$this->year
 TEXT;
         $data['text'] = $text;
         return $data;
