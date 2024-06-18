@@ -23,6 +23,15 @@ final readonly class StartHandler extends Handler
         $this->telegram->send($this->method, [
             'chat_id' => $this->fromId,
             'text'    => $this->getText(),
+            'reply_markup' => [
+                'keyboard'          => [
+                    [
+                        ['text' => 'Начать мониторинг'],
+                    ],
+                ],
+                'one_time_keyboard' => true,
+                'resize_keyboard'   => true,
+            ],
         ]);
     }
 
