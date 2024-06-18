@@ -89,8 +89,10 @@ final readonly class ArrNavigationHandler extends Handler
         return [
             $navButtons,
             [
-                'text'          => 'Назад',
-                'callback_data' => "sel_dep:$this->dep:>:0",
+                [
+                    'text'          => 'Назад',
+                    'callback_data' => "sel_dep:$this->dep:>:0",
+                ],
             ],
         ];
     }
