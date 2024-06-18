@@ -19,15 +19,6 @@ final readonly class CancelHandler extends Handler
             'chat_id'      => $this->fromId,
             'message_id'   => $this->messageId,
             'text'         => 'Отменено',
-            'reply_markup' => [
-                'keyboard'          => [
-                    [
-                        ['text' => 'Начать мониторинг'],
-                    ],
-                ],
-                'one_time_keyboard' => true,
-                'resize_keyboard'   => true,
-            ],
         ]);
     }
 
