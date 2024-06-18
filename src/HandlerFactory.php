@@ -6,6 +6,7 @@ namespace App;
 use App\Contracts\DtoContract;
 use App\Handlers\AcceptHandler;
 use App\Handlers\ArrNavigationHandler;
+use App\Handlers\CancelHandler;
 use App\Handlers\DateDayHandler;
 use App\Handlers\DateMonthHandler;
 use App\Handlers\DepNavigationHandler;
@@ -26,6 +27,7 @@ class HandlerFactory
             DateMonthHandler::validate($dto) => new DateMonthHandler($dto),
             DateDayHandler::validate($dto) => new DateDayHandler($dto),
             AcceptHandler::validate($dto) => new AcceptHandler($dto),
+            CancelHandler::validate($dto) => new CancelHandler($dto),
             default => throw new Exception(),
         };
     }
