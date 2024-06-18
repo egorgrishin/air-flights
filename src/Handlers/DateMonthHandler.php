@@ -40,6 +40,7 @@ final readonly class DateMonthHandler extends Handler
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getButtons(),
+                    $this->getMenuButtons(),
                 ],
             ],
         ]);
@@ -70,5 +71,19 @@ final readonly class DateMonthHandler extends Handler
         }
 
         return $buttons;
+    }
+
+    private function getMenuButtons(): array
+    {
+        return [
+            [
+                'text'          => 'Назад',
+                'callback_data' => "sel_arr:$this->dep:$this->arr:>:0",
+            ],
+            [
+                'text'          => 'Отменить',
+                'callback_data' => "sel_cancel",
+            ],
+        ];
     }
 }

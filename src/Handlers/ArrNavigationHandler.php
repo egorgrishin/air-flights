@@ -29,15 +29,17 @@ final readonly class ArrNavigationHandler extends Handler
     public function process(): void
     {
         $airports = $this->getAirports();
-        $airportButtons = $this->getAirportButtons($airports);
-        $navButtons = $this->getNavigationButtons(count($airports));
 
         $this->telegram->send($this->method, [
             'chat_id'      => $this->fromId,
             'message_id'   => $this->messageId,
             'text'         => "Выберите аэропорт прибытия",
             'reply_markup' => [
-                'inline_keyboard' => [...$airportButtons, ...$navButtons],
+                'inline_keyboard' => [
+                    ...$this->getAirportButtons($airports),
+                    $this->getNavigationButtons(count($airports)),
+                    $this->getMenuButtons(),
+                ],
             ],
         ]);
     }
@@ -86,13 +88,19 @@ final readonly class ArrNavigationHandler extends Handler
                 'callback_data' => "sel_arr:$this->dep:>:$this->end",
             ];
         }
+        return $navButtons;
+    }
+
+    private function getMenuButtons(): array
+    {
         return [
-            $navButtons,
             [
-                [
-                    'text'          => 'Назад',
-                    'callback_data' => "sel_dep:$this->dep:>:0",
-                ],
+                'text'          => 'Назад',
+                'callback_data' => "sel_dep:$this->dep:>:0",
+            ],
+            [
+                'text'          => 'Отменить',
+                'callback_data' => "sel_cancel",
             ],
         ];
     }

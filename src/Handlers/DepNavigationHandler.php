@@ -21,28 +21,42 @@ final readonly class DepNavigationHandler extends Handler
 
     public static function validate(DtoContract $dto): bool
     {
-        return $dto->data === '/new'
+        return $dto->data === 'Начать мониторинг'
             || preg_match('/^sel_dep:[<>]:\d+$/', $dto->data) === 1;
     }
 
     public function process(): void
     {
         $airports = $this->repository->getAll();
-        $airportButtons = $this->getAirportButtons($airports);
-        $navButtons = $this->getNavigationButtons(count($airports));
 
         $this->telegram->send(
             $this->method,
-            $this->getMessageData([...$airportButtons, $navButtons]),
+            $this->getMessageData($airports),
         );
     }
 
     protected function parseDto(DtoContract $dto): void
     {
-        $data = $dto->data === '/new' ? 'sel_dep:>:0' : $dto->data;
+        $data = $dto->data === '/Начать мониторинг' ? 'sel_dep:>:0' : $dto->data;
         [, $sign, $index] = explode(':', $data);
         $this->start = (int) ($sign === '>' ? $index : ($index - 5));
         $this->end = $this->start + 5;
+    }
+
+    private function getMessageData(array $airports): array
+    {
+        return [
+            'chat_id'      => $this->fromId,
+            'message_id'   => $this->messageId,
+            'text'         => "Выберите аэропорт отправления",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    ...$this->getAirportButtons($airports),
+                    $this->getNavigationButtons(count($airports)),
+                    $this->getMenuButtons(),
+                ],
+            ],
+        ];
     }
 
     private function getAirportButtons(array $airports): array
@@ -78,14 +92,12 @@ final readonly class DepNavigationHandler extends Handler
         return $buttons;
     }
 
-    private function getMessageData(array $buttons): array
+    private function getMenuButtons(): array
     {
         return [
-            'chat_id'      => $this->fromId,
-            'message_id'   => $this->messageId,
-            'text'         => "Выберите аэропорт отправления",
-            'reply_markup' => [
-                'inline_keyboard' => $buttons,
+            [
+                'text'          => 'Отменить',
+                'callback_data' => "sel_cancel",
             ],
         ];
     }

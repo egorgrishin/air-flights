@@ -34,9 +34,6 @@ final readonly class AcceptHandler extends Handler
 
     protected function parseDto(DtoContract $dto): void
     {
-        $data = explode(':', $dto->data);
-        $data[3] = $this->formatNums($data[3]);
-        $data[5] = $this->formatNums($data[5]);
         [
             $this->state,
             $this->dep,
@@ -44,10 +41,10 @@ final readonly class AcceptHandler extends Handler
             $this->month,
             $this->year,
             $this->day,
-        ] = $data;
+        ] = explode(':', $dto->data);
     }
 
-    private function formatNums(string $num): string
+    private function formatNum(string $num): string
     {
         return (int) $num < 10 ? '0' . $num : $num;
     }
@@ -65,6 +62,7 @@ final readonly class AcceptHandler extends Handler
             $data['reply_markup'] = [
                 'inline_keyboard' => [
                     $this->getSuccessButton(),
+                    $this->getMenuButtons(),
                 ],
             ];
         }
@@ -72,7 +70,7 @@ final readonly class AcceptHandler extends Handler
         $text .= <<<TEXT
 Город отправления $depAirport->title ($depAirport->code)
 Город прибытия $arrAirport->title ($arrAirport->code)
-Дата вылета $this->day.$this->month.$this->year
+Дата вылета $this->day.{$this->formatNum($this->month)}.{$this->formatNum($this->year)}
 TEXT;
         $data['text'] = $text;
         return $data;
@@ -91,6 +89,24 @@ TEXT;
             [
                 'text'          => 'Подтвердить',
                 'callback_data' => "suc:$this->dep:$this->arr:$this->month:$this->year:$this->day",
+            ],
+        ];
+    }
+
+    private function getMenuButtons(): array
+    {
+        if ($this->state === 'suc') {
+            return [];
+        }
+
+        return [
+            [
+                'text'          => 'Назад',
+                'callback_data' => "sel_day:$this->dep:$this->arr:$this->month:$this->year",
+            ],
+            [
+                'text'          => 'Отменить',
+                'callback_data' => "sel_cancel",
             ],
         ];
     }

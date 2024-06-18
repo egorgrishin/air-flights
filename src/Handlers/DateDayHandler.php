@@ -27,6 +27,7 @@ final readonly class DateDayHandler extends Handler
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getButtons(),
+                    $this->getMenuButtons(),
                 ],
             ],
         ]);
@@ -63,5 +64,19 @@ final readonly class DateDayHandler extends Handler
         }
 
         return $buttons;
+    }
+
+    private function getMenuButtons(): array
+    {
+        return [
+            [
+                'text'          => 'Назад',
+                'callback_data' => "sel_date:$this->dep:$this->arr",
+            ],
+            [
+                'text'          => 'Отменить',
+                'callback_data' => "sel_cancel",
+            ],
+        ];
     }
 }
