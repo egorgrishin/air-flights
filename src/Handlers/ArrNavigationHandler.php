@@ -73,19 +73,25 @@ final readonly class ArrNavigationHandler extends Handler
 
     private function getNavigationButtons(int $airportsCount): array
     {
-        $buttons = [];
+        $navButtons = [];
         if ($this->start > 0) {
-            $buttons[] = [
+            $navButtons[] = [
                 'text'          => '<-',
                 'callback_data' => "sel_arr:$this->dep:<:$this->start",
             ];
         }
         if ($this->end < $airportsCount) {
-            $buttons[] = [
+            $navButtons[] = [
                 'text'          => '->',
                 'callback_data' => "sel_arr:$this->dep:>:$this->end",
             ];
         }
-        return $buttons;
+        return [
+            $navButtons,
+            [
+                'text'          => 'Назад',
+                'callback_data' => "sel_dep:$this->dep:>:0",
+            ],
+        ];
     }
 }
