@@ -37,7 +37,7 @@ final readonly class ArrNavigationHandler extends Handler
             'message_id'   => $this->messageId,
             'text'         => "Выберите аэропорт прибытия",
             'reply_markup' => [
-                'inline_keyboard' => [...$airportButtons, $navButtons],
+                'inline_keyboard' => [...$airportButtons, ...$navButtons],
             ],
         ]);
     }
