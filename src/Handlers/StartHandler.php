@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
+use App\Enums\State;
 use App\Handler;
 
 final readonly class StartHandler extends Handler
@@ -26,7 +27,7 @@ final readonly class StartHandler extends Handler
             'reply_markup' => [
                 'keyboard'          => [
                     [
-                        ['text' => 'Начать мониторинг'],
+                        ['text' => State::StartMonitoring->value],
                     ],
                 ],
                 'one_time_keyboard' => true,

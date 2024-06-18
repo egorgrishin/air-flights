@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
+use App\Enums\State;
 use App\Handler;
 
 final readonly class DateDayHandler extends Handler
@@ -12,10 +13,20 @@ final readonly class DateDayHandler extends Handler
     private string $arr;
     private string $month;
     private string $year;
+    private string $prevState;
+    private string $nextState;
+
+    public function __construct(DtoContract $dto)
+    {
+        $this->prevState = State::SelectMonth->value;
+        $this->nextState = State::AcceptMonitoring->value;
+        parent::__construct($dto);
+    }
 
     public static function validate(DtoContract $dto): bool
     {
-        return preg_match('/^sel_day:[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}$/', $dto->data) === 1;
+        $state = State::SelectDay->value;
+        return preg_match("/^$state:[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}$/", $dto->data) === 1;
     }
 
     public function process(): void
@@ -59,7 +70,7 @@ final readonly class DateDayHandler extends Handler
             $day = $i + 1;
             $buttons[$index][] = [
                 'text'          => $day,
-                'callback_data' => "sel_acc:$this->dep:$this->arr:$this->month:$this->year:$day",
+                'callback_data' => "$this->nextState:$this->dep:$this->arr:$this->month:$this->year:$day",
             ];
         }
 
@@ -71,11 +82,11 @@ final readonly class DateDayHandler extends Handler
         return [
             [
                 'text'          => 'Назад',
-                'callback_data' => "sel_date:$this->dep:$this->arr",
+                'callback_data' => "$this->prevState:$this->dep:$this->arr",
             ],
             [
                 'text'          => 'Отменить',
-                'callback_data' => "sel_cancel",
+                'callback_data' => State::CancelMonitoring->value,
             ],
         ];
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
+use App\Enums\State;
 use App\Handler;
 use App\Repositories\AirportRepository;
 
@@ -12,17 +13,22 @@ final readonly class DepNavigationHandler extends Handler
     private AirportRepository $repository;
     private int $start;
     private int $end;
+    private string $selfState;
+    private string $nextState;
 
     public function __construct(DtoContract $dto)
     {
         $this->repository = new AirportRepository();
+        $this->selfState = State::SelectDep->value;
+        $this->nextState = State::SelectArr->value;
         parent::__construct($dto);
     }
 
     public static function validate(DtoContract $dto): bool
     {
-        return $dto->data === 'Начать мониторинг'
-            || preg_match('/^sel_dep:[<>]:\d+$/', $dto->data) === 1;
+        $state = State::SelectDep->value;
+        return $dto->data === State::StartMonitoring->value
+            || preg_match("/^$state:[<>]:\d+$/", $dto->data) === 1;
     }
 
     public function process(): void
@@ -37,7 +43,7 @@ final readonly class DepNavigationHandler extends Handler
 
     protected function parseDto(DtoContract $dto): void
     {
-        $data = $dto->data === '/Начать мониторинг' ? 'sel_dep:>:0' : $dto->data;
+        $data = $dto->data === State::StartMonitoring->value ? "$this->selfState:>:0" : $dto->data;
         [, $sign, $index] = explode(':', $data);
         $this->start = (int) ($sign === '>' ? $index : ($index - 5));
         $this->end = $this->start + 5;
@@ -67,7 +73,7 @@ final readonly class DepNavigationHandler extends Handler
             $buttons[] = [
                 [
                     'text'          => $airport->title,
-                    'callback_data' => "sel_arr:$airport->code:>:0",
+                    'callback_data' => "$this->nextState:$airport->code:>:0",
                 ],
             ];
         }
@@ -80,13 +86,13 @@ final readonly class DepNavigationHandler extends Handler
         if ($this->start > 0) {
             $buttons[] = [
                 'text'          => '<-',
-                'callback_data' => "sel_dep:<:$this->start",
+                'callback_data' => "$this->selfState:<:$this->start",
             ];
         }
         if ($this->end < $airportsCount) {
             $buttons[] = [
                 'text'          => '->',
-                'callback_data' => "sel_dep:>:$this->end",
+                'callback_data' => "$this->selfState:>:$this->end",
             ];
         }
         return $buttons;
@@ -97,7 +103,7 @@ final readonly class DepNavigationHandler extends Handler
         return [
             [
                 'text'          => 'Отменить',
-                'callback_data' => "sel_cancel",
+                'callback_data' => State::CancelMonitoring->value,
             ],
         ];
     }

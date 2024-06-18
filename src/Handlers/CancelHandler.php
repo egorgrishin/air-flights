@@ -4,13 +4,14 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
+use App\Enums\State;
 use App\Handler;
 
 final readonly class CancelHandler extends Handler
 {
     public static function validate(DtoContract $dto): bool
     {
-        return $dto->data === 'sel_cancel';
+        return $dto->data === State::CancelMonitoring->value;
     }
 
     public function process(): void

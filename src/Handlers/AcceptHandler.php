@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
+use App\Enums\State;
 use App\Handler;
 use App\Repositories\AirportRepository;
 use App\VO\Airport;
@@ -16,10 +17,21 @@ final readonly class AcceptHandler extends Handler
     private string $month;
     private string $year;
     private string $day;
+    private string $prevState;
+    private string $successState;
+
+    public function __construct(DtoContract $dto)
+    {
+        $this->prevState = State::SelectDay->value;
+        $this->successState = State::SuccessMonitoring->value;
+        parent::__construct($dto);
+    }
 
     public static function validate(DtoContract $dto): bool
     {
-        return preg_match('/^(sel_acc|suc):[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}:\d{1,2}$/', $dto->data) === 1;
+        $accept = State::AcceptMonitoring->value;
+        $success = State::SuccessMonitoring->value;
+        return preg_match("/^($accept|$success):[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}:\d{1,2}$/", $dto->data) === 1;
     }
 
     public function process(): void
@@ -56,7 +68,7 @@ final readonly class AcceptHandler extends Handler
             'message_id' => $this->messageId,
         ];
         $text = '';
-        if ($this->state === 'suc') {
+        if ($this->state === $this->successState) {
             $text .= "Мониторинг успешно активирован!\n";
         } else {
             $data['reply_markup'] = [
@@ -88,25 +100,25 @@ TEXT;
         return [
             [
                 'text'          => 'Подтвердить',
-                'callback_data' => "suc:$this->dep:$this->arr:$this->month:$this->year:$this->day",
+                'callback_data' => "$this->successState:$this->dep:$this->arr:$this->month:$this->year:$this->day",
             ],
         ];
     }
 
     private function getMenuButtons(): array
     {
-        if ($this->state === 'suc') {
+        if ($this->state === $this->successState) {
             return [];
         }
 
         return [
             [
                 'text'          => 'Назад',
-                'callback_data' => "sel_day:$this->dep:$this->arr:$this->month:$this->year",
+                'callback_data' => "$this->prevState:$this->dep:$this->arr:$this->month:$this->year",
             ],
             [
                 'text'          => 'Отменить',
-                'callback_data' => "sel_cancel",
+                'callback_data' => State::CancelMonitoring->value,
             ],
         ];
     }
