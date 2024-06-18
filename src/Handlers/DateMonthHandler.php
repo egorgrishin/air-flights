@@ -78,7 +78,7 @@ final readonly class DateMonthHandler extends Handler
         return [
             [
                 'text'          => 'Назад',
-                'callback_data' => "sel_arr:$this->dep:$this->arr:>:0",
+                'callback_data' => "sel_arr:$this->dep:>:0",
             ],
             [
                 'text'          => 'Отменить',

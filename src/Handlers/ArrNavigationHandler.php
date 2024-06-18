@@ -96,7 +96,7 @@ final readonly class ArrNavigationHandler extends Handler
         return [
             [
                 'text'          => 'Назад',
-                'callback_data' => "sel_dep:$this->dep:>:0",
+                'callback_data' => "sel_dep:>:0",
             ],
             [
                 'text'          => 'Отменить',
