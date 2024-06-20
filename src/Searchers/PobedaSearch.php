@@ -22,7 +22,7 @@ class PobedaSearch implements SearcherContract
      * @throws GuzzleException
      * @throws Exception
      */
-    public function run(string $dep, string $arr, DateTime $dateTime): float
+    public function run(string $dep, string $arr, DateTime $dateTime): ?float
     {
         $date = $dateTime->format('d.m.Y');
         $uri = 'https://ticket.pobeda.aero/websky/json/search-variants-mono-brand-cartesian';
@@ -52,7 +52,7 @@ class PobedaSearch implements SearcherContract
             throw new Exception('Error Pobeda');
         }
 
-        return $this->parse($data);
+        return $this->parse($data) ?: null;
     }
 
     /**

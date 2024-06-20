@@ -22,7 +22,7 @@ class SmartaviaSearch implements SearcherContract
      * @throws GuzzleException
      * @throws Exception
      */
-    public function run(string $dep, string $arr, DateTime $dateTime): float
+    public function run(string $dep, string $arr, DateTime $dateTime): ?float
     {
         $date = $dateTime->format('Y-m-d');
         $params = [
@@ -52,7 +52,7 @@ class SmartaviaSearch implements SearcherContract
         }
 
         // Может быть 0
-        return $this->parse($data, $params);
+        return $this->parse($data, $params) ?: null;
     }
 
     private function toBody(array $params): string
