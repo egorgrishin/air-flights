@@ -5,10 +5,14 @@ namespace App\Handlers;
 
 use App\Contracts\DtoContract;
 use App\Enums\State;
+use App\Enums\TelegramMethod;
 use App\Handler;
 use App\Repositories\AirportRepository;
 use App\Repositories\SubscriptionsRepository;
+use App\Services\GetPriceService;
 use App\VO\Airport;
+use App\VO\CompanySubscription;
+use DateTime;
 
 final readonly class AcceptHandler extends Handler
 {
@@ -46,10 +50,24 @@ final readonly class AcceptHandler extends Handler
 
         $this->telegram->send($this->method, $data);
         if ($this->state === $this->successState) {
-            (new SubscriptionsRepository())->create(
-                (string) $this->fromId,
-                "$this->year-$this->formattedMonth-$this->formattedDay",
+            $date = "$this->year-$this->formattedMonth-$this->formattedDay";
+            $dt = DateTime::createFromFormat('Y-m-d', $date);
+            $repository = new SubscriptionsRepository();
+            $subscriptionId = $repository->create(
+                (string) $this->fromId, $this->dep, $this->arr, $date
             );
+            $prices = (new GetPriceService())->run($subscriptionId, $this->dep, $this->arr, $dt);
+            $repository->createPrice($prices);
+            $prices = array_filter($prices, fn (CompanySubscription $price) => $price->price !== null);
+            if (!$prices) {
+                return;
+            }
+            $min = min(array_column($prices, 'price'));
+
+            $this->telegram->send(TelegramMethod::Send, [
+                'chat_id' => $this->fromId,
+                'text'    => "Цена {$min}р",
+            ]);
         }
     }
 

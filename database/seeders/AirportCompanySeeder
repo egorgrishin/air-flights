@@ -7,30 +7,29 @@ use App\Core\Container;
 require __DIR__ . '/../../vendor/autoload.php';
 
 const COMPANIES = [
-    ['title' => 'Победа', 'file' => 'pobeda.json'],
-    ['title' => 'Smartavia', 'file' => 'smartavia.json'],
+    ['title' => 'Победа', 'code' => 'Pobeda', 'file' => 'pobeda.json'],
+    ['title' => 'Smartavia', 'code' => 'SmartAvia', 'file' => 'smartavia.json'],
 ];
 
-function createCompany(array $company): int
+function createCompany(array $company): void
 {
-    $pdo = Container::pdo();
-    $statement = $pdo->prepare('INSERT INTO companies (title) VALUES (?)');
-    $statement->execute([$company['title']]);
-    return (int) $pdo->lastInsertId();
+    Container::pdo()
+        ->prepare('INSERT INTO companies (title, code) VALUES (?, ?)')
+        ->execute([$company['title'], $company['code']]);
 }
 
 function createAirport(array $airport): void
 {
-    $pdo = Container::pdo();
-    $statement = $pdo->prepare('INSERT INTO airports (code, city_code, sort, title) VALUES (:iataCode, :metropolitanCode, :sort, :name)');
-    $statement->execute($airport);
+    Container::pdo()
+        ->prepare('INSERT INTO airports (code, city_code, sort, title) VALUES (:iataCode, :metropolitanCode, :sort, :name)')
+        ->execute($airport);
 }
 
-function attachCompanyToAirport(int $companyId, string $airportCode): void
+function attachCompanyToAirport(string $companyCode, string $airportCode): void
 {
-    $pdo = Container::pdo();
-    $statement = $pdo->prepare('INSERT INTO airport_company (airport_code, company_id) VALUES (?, ?)');
-    $statement->execute([$airportCode, $companyId]);
+    Container::pdo()
+        ->prepare('INSERT INTO airport_company (airport_code, company_code) VALUES (?, ?)')
+        ->execute([$airportCode, $companyCode]);
 }
 
 function getAirports(string $file): array
@@ -45,14 +44,14 @@ $pdo = Container::pdo();
 $pdo->beginTransaction();
 $airports = [];
 foreach (COMPANIES as $company) {
-    $companyId = createCompany($company);
+    createCompany($company);
     $companyAirports = getAirports($company['file']);
     foreach ($companyAirports as $airport) {
         if (empty($airports[$airport['iataCode']])) {
             createAirport($airport);
             $airports[$airport['iataCode']] = true;
         }
-        attachCompanyToAirport($companyId, $airport['iataCode']);
+        attachCompanyToAirport($company['code'], $airport['iataCode']);
     }
 }
 $pdo->commit();

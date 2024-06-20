@@ -3,17 +3,31 @@ declare(strict_types=1);
 
 namespace App\Searchers;
 
+use App\Contracts\SearcherContract;
 use DateTime;
+use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
-class SmartaviaSearch
+class SmartaviaSearch implements SearcherContract
 {
-    public function run(DateTime $dateTime)
+    public const CODE = 'SmartAvia';
+
+    public function getCode(): string
+    {
+        return self::CODE;
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    public function run(string $dep, string $arr, DateTime $dateTime): float
     {
         $date = $dateTime->format('Y-m-d');
         $params = [
-            'origin'              => 'LED',
-            'destination'         => 'CEK',
+            'origin'              => $dep,
+            'destination'         => $arr,
             'calendar_date_start' => $date,
             'calendar_date_end'   => $date,
         ];
@@ -30,15 +44,15 @@ class SmartaviaSearch
         ]);
 
         if ($response->getStatusCode() !== 200) {
-            dump('Error Smartavia');
+            throw new Exception('Error Smartavia');
         }
         $data = json_decode($response->getBody()->getContents(), true);
         if (($data['status'] ?? '0') !== 'ok') {
-            dump('Error Smartavia');
+            throw new Exception('Error Smartavia');
         }
 
         // Может быть 0
-        dd("Smartavia, СПБ-ЧЛБ, $date, от " . $this->parse($data, $params));
+        return $this->parse($data, $params);
     }
 
     private function toBody(array $params): string
@@ -50,34 +64,37 @@ class SmartaviaSearch
         return implode('&', $body);
     }
 
-    private function parse(array $data, array $params)
+    /**
+     * @throws Exception
+     */
+    private function parse(array $data, array $params): float
     {
         if (empty($data['data'])) {
-            dd('Parse Error Smartavia [data]');
+            throw new Exception('Parse Error Smartavia [data]');
         }
 
         $data = $data['data'];
         $key = $params['origin'] . '-' . $params['destination'];
         if (empty($data[$key])) {
-            dd("Parse Error Smartavia [$key]");
+            throw new Exception('Parse Error Smartavia [$key]');
         }
 
         $data = $data[$key];
         $date = $params['calendar_date_start'];
         if (empty($data[$date])) {
-            dd("Parse Error Smartavia [$date]");
+            throw new Exception('Parse Error Smartavia [$date]');
         }
 
         $data = $data[$date];
         if (empty($data['label'])) {
-            dd("Parse Error Smartavia [label]");
+            throw new Exception('Parse Error Smartavia [label]');
         }
 
         $data = $data['label'];
         if (empty($data['value'])) {
-            dd("Parse Error Smartavia [value]");
+            throw new Exception('Parse Error Smartavia [value]');
         }
 
-        return (int) str_replace([' ', '₽'], '', $data['value']);
+        return (float) str_replace([' ', '₽'], '', $data['value']);
     }
 }

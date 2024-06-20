@@ -3,12 +3,26 @@ declare(strict_types=1);
 
 namespace App\Searchers;
 
+use App\Contracts\SearcherContract;
 use DateTime;
+use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
-class PobedaSearch
+class PobedaSearch implements SearcherContract
 {
-    public function run(DateTime $dateTime)
+    public const CODE = 'Pobeda';
+
+    public function getCode(): string
+    {
+        return self::CODE;
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    public function run(string $dep, string $arr, DateTime $dateTime): float
     {
         $date = $dateTime->format('d.m.Y');
         $uri = 'https://ticket.pobeda.aero/websky/json/search-variants-mono-brand-cartesian';
@@ -18,8 +32,8 @@ class PobedaSearch
                 'searchGroupId'         => 'standard',
                 'segmentsCount'         => 1,
                 'date'                  => [$date],
-                'origin-city-code'      => ['LED'],
-                'destination-city-code' => ['CEK'],
+                'origin-city-code'      => [$dep],
+                'destination-city-code' => [$arr],
                 'adultsCount'           => 1,
             ],
             'headers' => [
@@ -30,23 +44,24 @@ class PobedaSearch
         $headers = $response->getHeaders();
         $contentType = $headers['content-type'] ?? $headers['Content-Type'];
         if ($response->getStatusCode() !== 200 || in_array('text/html', $contentType)) {
-            dump('Error Pobeda');
-            return;
+            throw new Exception('Error Pobeda');
         }
 
         $data = json_decode($response->getBody()->getContents(), true);
         if (($data['result'] ?? '0') !== 'ok') {
-            dump('Error Pobeda', $data);
-            return;
+            throw new Exception('Error Pobeda');
         }
 
-        dump("Победа, СПБ-ЧЛБ, $date, от " . $this->parse($data));
+        return $this->parse($data);
     }
 
-    private function parse(array $data)
+    /**
+     * @throws Exception
+     */
+    private function parse(array $data): float
     {
         if (empty($data['prices'])) {
-            dd('Parse Error Pobeda [prices]');
+            throw new Exception('Parse Error Pobeda [prices]');
         }
 
         $data = $data['prices'][0];
