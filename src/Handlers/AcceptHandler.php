@@ -63,10 +63,11 @@ final readonly class AcceptHandler extends Handler
                 return;
             }
             $min = min(array_column($prices, 'price'));
-
-            $this->telegram->send(TelegramMethod::Send, [
-                'chat_id' => $this->fromId,
-                'text'    => "Цена {$min}р",
+            $data['text'] .= "\nЦена {$min}р";
+            $this->telegram->send($this->method, [
+                'chat_id'    => $this->fromId,
+                'message_id' => $this->messageId,
+                'text'       => "Цена {$min}р",
             ]);
         }
     }
