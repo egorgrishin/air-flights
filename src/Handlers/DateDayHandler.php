@@ -70,8 +70,8 @@ final readonly class DateDayHandler extends Handler
             }
 
             $day = $i + 1;
-            $dt = DateTime::createFromFormat('Y-n-j', "$this->year-$this->month-$day");
-            if ($dt < $tomorrow) {
+            $dt = DateTime::createFromFormat('Y-n-j H:i', "$this->year-$this->month-$day 00:00");
+            if ($dt <= $tomorrow) {
                 continue;
             }
             $buttons[$index][] = [
