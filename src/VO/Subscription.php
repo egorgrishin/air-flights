@@ -7,16 +7,16 @@ final readonly class Subscription
 {
     public ?int    $id;
     public string  $chatId;
-    public string  $departureAirportCode;
-    public string  $arrivalAirportCode;
+    public string  $depCode;
+    public string  $arrCode;
     public string  $date;
     public ?bool   $isActive;
     public ?string $createdAt;
 
     public function __construct(
         string  $chatId,
-        string  $departureAirportCode,
-        string  $arrivalAirportCode,
+        string  $depCode,
+        string  $arrCode,
         string  $date,
         ?int    $id = null,
         ?bool   $isActive = null,
@@ -24,8 +24,8 @@ final readonly class Subscription
     ) {
         $this->id = $id;
         $this->chatId = $chatId;
-        $this->departureAirportCode = $departureAirportCode;
-        $this->arrivalAirportCode = $arrivalAirportCode;
+        $this->depCode = $depCode;
+        $this->arrCode = $arrCode;
         $this->date = $date;
         $this->isActive = $isActive;
         $this->createdAt = $createdAt;

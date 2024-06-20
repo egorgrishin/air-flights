@@ -7,7 +7,7 @@ use App\Contracts\SearcherContract;
 use App\Core\Container;
 use App\Searchers\PobedaSearch;
 use App\Searchers\SmartaviaSearch;
-use App\VO\CompanySubscription;
+use App\VO\Price;
 use DateTime;
 use Throwable;
 
@@ -26,7 +26,7 @@ class GetPriceService
         $data = [];
         foreach (self::SEARCHERS as $searcher) {
             $searcher = new $searcher();
-            $data[] = new CompanySubscription(
+            $data[] = new Price(
                 $searcher->getCode(),
                 $subscriptionId,
                 $this->getSearcherPrice($searcher, $dep, $arr, $dt),

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS company_subscription
+CREATE TABLE IF NOT EXISTS prices
 (
     company_code    VARCHAR(63)     NOT NULL,
     subscription_id BIGINT UNSIGNED NOT NULL,

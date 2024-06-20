@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\VO;
 
-final readonly class CompanySubscription
+final readonly class Price
 {
     public string $companyCode;
-    public int    $subscriptionId;
+    public int $subscriptionId;
     public ?float $price;
 
     public function __construct(
@@ -22,7 +22,7 @@ final readonly class CompanySubscription
 
     public static function fromPdo(): callable
     {
-        return function ($companyCode, $subscriptionId, $price): CompanySubscription {
+        return function (string $companyCode, int $subscriptionId, ?float $price): Price {
             return new self($companyCode, $subscriptionId, $price);
         };
     }

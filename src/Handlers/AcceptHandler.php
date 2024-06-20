@@ -10,7 +10,7 @@ use App\Repositories\AirportRepository;
 use App\Repositories\SubscriptionsRepository;
 use App\Services\GetPriceService;
 use App\VO\Airport;
-use App\VO\CompanySubscription;
+use App\VO\Price;
 use DateTime;
 
 final readonly class AcceptHandler extends Handler
@@ -57,7 +57,7 @@ final readonly class AcceptHandler extends Handler
             );
             $prices = (new GetPriceService())->run($subscriptionId, $this->dep, $this->arr, $dt);
             $repository->createPrice($prices);
-            $prices = array_filter($prices, fn (CompanySubscription $price) => $price->price !== null);
+            $prices = array_filter($prices, fn (Price $price) => $price->price !== null);
             if (!$prices) {
                 return;
             }
