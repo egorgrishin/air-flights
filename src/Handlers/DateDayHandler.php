@@ -6,6 +6,7 @@ namespace App\Handlers;
 use App\Contracts\DtoContract;
 use App\Enums\State;
 use App\Handler;
+use DateTime;
 
 final readonly class DateDayHandler extends Handler
 {
@@ -60,6 +61,7 @@ final readonly class DateDayHandler extends Handler
     {
         $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
         $buttons = [];
+        $tomorrow = new DateTime();
 
         for ($i = 0; $i < $daysCount; $i++) {
             $index = intdiv($i, 5);
@@ -68,6 +70,10 @@ final readonly class DateDayHandler extends Handler
             }
 
             $day = $i + 1;
+            $dt = DateTime::createFromFormat('Y-n-j', "$this->year-$this->month-$day");
+            if ($dt < $tomorrow) {
+                continue;
+            }
             $buttons[$index][] = [
                 'text'          => $day,
                 'callback_data' => "$this->nextState:$this->dep:$this->arr:$this->month:$this->year:$day",
