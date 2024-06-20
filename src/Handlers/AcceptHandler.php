@@ -5,7 +5,6 @@ namespace App\Handlers;
 
 use App\Contracts\DtoContract;
 use App\Enums\State;
-use App\Enums\TelegramMethod;
 use App\Handler;
 use App\Repositories\AirportRepository;
 use App\Repositories\SubscriptionsRepository;
@@ -67,7 +66,7 @@ final readonly class AcceptHandler extends Handler
             $this->telegram->send($this->method, [
                 'chat_id'    => $this->fromId,
                 'message_id' => $this->messageId,
-                'text'       => "Цена {$min}р",
+                'text'       => $data['text'],
             ]);
         }
     }
