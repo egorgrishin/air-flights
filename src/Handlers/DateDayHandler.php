@@ -61,7 +61,7 @@ final readonly class DateDayHandler extends Handler
     {
         $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
         $buttons = [];
-        $tomorrow = new DateTime();
+        $tomorrow = new DateTime('tomorrow');
 
         for ($i = 0; $i < $daysCount; $i++) {
             $index = intdiv($i, 5);
