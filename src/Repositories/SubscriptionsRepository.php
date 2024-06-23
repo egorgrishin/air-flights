@@ -43,7 +43,15 @@ WHERE
         return (int) $pdo->lastInsertId();
     }
 
-    public function createPrice(array $prices): void
+    public function blockOldSubscriptions(): void
+    {
+        $sql = "UPDATE subscriptions SET is_active = 0 WHERE date < NOW()";
+        Container::pdo()
+            ->prepare($sql)
+            ->execute();
+    }
+
+    public function createPrices(array $prices): void
     {
         $values = str_repeat('(?, ?, ?), ', count($prices) - 1) . '(?, ?, ?)';
         $sql = "INSERT INTO prices (company_code, subscription_id, price) VALUES $values";
@@ -52,5 +60,13 @@ WHERE
             ->execute(
                 array_merge(...array_map(fn (Price $price) => array_values($price->toArray()), $prices))
             );
+    }
+
+    public function updatePrice(Price $price): void
+    {
+        $sql = "UPDATE prices SET price = ? WHERE company_code = ? AND subscription_id = ?";
+        Container::pdo()
+            ->prepare($sql)
+            ->execute([$price->price, $price->companyCode, $price->subscriptionId]);
     }
 }

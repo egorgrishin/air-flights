@@ -56,7 +56,7 @@ final readonly class AcceptHandler extends Handler
                 (string) $this->fromId, $this->dep, $this->arr, $date
             );
             $prices = (new GetPriceService())->run($subscriptionId, $this->dep, $this->arr, $dt);
-            $repository->createPrice($prices);
+            $repository->createPrices($prices);
             $prices = array_filter($prices, fn (Price $price) => $price->price !== null);
             if (!$prices) {
                 return;

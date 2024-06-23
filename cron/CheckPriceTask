@@ -1,0 +1,106 @@
+#!/usr/bin/php
+<?php
+declare(strict_types=1);
+
+use App\Core\Telegram;
+use App\Enums\TelegramMethod;
+use App\Repositories\SubscriptionsRepository;
+use App\Services\GetPriceService;
+use App\VO\Price;
+use App\VO\Subscription;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$repository = new SubscriptionsRepository();
+$subscriptions = $repository->getAll();
+$subscriptionIds = array_column($subscriptions, 'id');
+$prices = $repository->getAllPrices($subscriptionIds);
+
+$data = array_fill_keys($subscriptionIds, []);
+foreach ($prices as $price) {
+    if (!array_key_exists($price->subscriptionId, $data)) {
+        continue;
+    }
+    $data[$price->subscriptionId][$price->companyCode] = $price;
+}
+
+/** @var Subscription $subscription */
+foreach ($subscriptions as $subscription) {
+    $prices = (new GetPriceService())->run(
+        $subscription->id,
+        $subscription->depCode,
+        $subscription->arrCode,
+        DateTime::createFromFormat('Y-m-d', $subscription->date),
+    );
+
+    checkPrices($subscription, $prices, $data[$subscription->id]);
+    savePrices($prices, $data[$subscription->id]);
+}
+
+/**
+ * Отправляет уведомление об изменении цены в Telegram
+ *
+ * @param Subscription $subscription
+ * @param Price[] $prices
+ * @param Price[] $oldPrices
+ * @return void
+ */
+function checkPrices(Subscription $subscription, array $prices, array $oldPrices): void
+{
+    $oldPrices = array_filter(array_column($oldPrices, 'price'));
+    $prices = array_filter(array_column($prices, 'price'));
+    // Если в данный момент нет цены, то отправлять уведомление не нужно
+    if (empty($prices)) {
+        return;
+    }
+    $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
+    $minPrice = min($prices);
+    $telegram = new Telegram();
+    if (empty($oldPrices)) {
+        $text = <<<TEXT
+                $date. $subscription->depCode-$subscription->arrCode
+                Цена установлена - {$minPrice}р.
+                TEXT;
+        $telegram->send(TelegramMethod::Send, [
+            'chat_id' => $subscription->chatId,
+            'text'    => $text,
+        ]);
+        return;
+    }
+
+    $minOldPrice = min($oldPrices);
+    if ($minPrice === $minOldPrice) {
+        return;
+    }
+    // Отправляем сообщение об изменении цены
+    $verb = $minPrice < $minOldPrice ? 'уменьшилась' : 'увеличилась';
+    $diff = abs($minPrice - $minOldPrice);
+    $text = <<<TEXT
+            $date. $subscription->depCode-$subscription->arrCode
+            Цена $verb на {$diff}р. - {$minPrice}р.
+            TEXT;
+    $telegram->send(TelegramMethod::Send, [
+        'chat_id' => $subscription->chatId,
+        'text'    => $text,
+    ]);
+}
+
+/**
+ * Сохраняет новые цены в базу данных
+ *
+ * @param Price[] $prices
+ * @param Price[] $oldPrices
+ * @return void
+ */
+function savePrices(array $prices, array $oldPrices): void
+{
+    global $repository;
+    foreach ($prices as $price) {
+        if (!$price->price) {
+            continue;
+        }
+        empty($oldPrices[$price->companyCode])
+            ? $repository->createPrices([$price])
+            : $repository->updatePrice($price);
+    }
+}
