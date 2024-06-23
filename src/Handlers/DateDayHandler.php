@@ -64,15 +64,6 @@ final readonly class DateDayHandler extends Handler
         $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
         $buttons = [];
         $tomorrow = new DateTime('tomorrow');
-        $days = [
-            1 => 'ПН',
-            2 => 'ВТ',
-            3 => 'СР',
-            4 => 'ЧТ',
-            5 => 'ПТ',
-            6 => 'СБ',
-            7 => 'ВС',
-        ];
 
         for ($i = 0; $i < $daysCount; $i++) {
             $index = intdiv($i, 7);
@@ -98,7 +89,7 @@ final readonly class DateDayHandler extends Handler
                 $cb = "$this->selfState:$this->dep:$this->arr:$this->month:$this->year";
             }
             $buttons[$index][] = [
-                'text'          => $day . ' ' . $days[$dayNum],
+                'text'          => $day,
                 'callback_data' => $cb,
             ];
             if ($i === $daysCount - 1) {
