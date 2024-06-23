@@ -15,11 +15,13 @@ final readonly class DateDayHandler extends Handler
     private string $month;
     private string $year;
     private string $prevState;
+    private string $selfState;
     private string $nextState;
 
     public function __construct(DtoContract $dto)
     {
         $this->prevState = State::SelectMonth->value;
+        $this->selfState = State::SelectDay->value;
         $this->nextState = State::AcceptMonitoring->value;
         parent::__construct($dto);
     }
@@ -62,22 +64,51 @@ final readonly class DateDayHandler extends Handler
         $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
         $buttons = [];
         $tomorrow = new DateTime('tomorrow');
+        $days = [
+            1 => 'ПН',
+            2 => 'ВТ',
+            3 => 'СР',
+            4 => 'ЧТ',
+            5 => 'ПТ',
+            6 => 'СБ',
+            7 => 'ВС',
+        ];
 
         for ($i = 0; $i < $daysCount; $i++) {
-            $index = intdiv($i, 5);
+            $index = intdiv($i, 7);
             if (empty($buttons[$index])) {
                 $buttons[$index] = [];
             }
 
             $day = $i + 1;
             $dt = DateTime::createFromFormat('Y-n-j H:i', "$this->year-$this->month-$day 00:00");
+            $dayNum = (int)$dt->format('N');
+            if ($i == 0) {
+                for ($j = 1; $j < $dayNum; $j++) {
+                    $buttons[$index][] = [
+                        'text'          => 'X',
+                        'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    ];
+                }
+            }
+
+            $cb = "$this->nextState:$this->dep:$this->arr:$this->month:$this->year:$day";
             if ($dt <= $tomorrow) {
-                continue;
+                $day = 'X';
+                $cb = "$this->selfState:$this->dep:$this->arr:$this->month:$this->year";
             }
             $buttons[$index][] = [
-                'text'          => $day,
-                'callback_data' => "$this->nextState:$this->dep:$this->arr:$this->month:$this->year:$day",
+                'text'          => $day . ' ' . $days[$dayNum],
+                'callback_data' => $cb,
             ];
+            if ($i === $daysCount - 1) {
+                for ($j = $dayNum + 1; $j <= 7; $j++) {
+                    $buttons[$index][] = [
+                        'text'          => 'X',
+                        'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    ];
+                }
+            }
         }
 
         return $buttons;
