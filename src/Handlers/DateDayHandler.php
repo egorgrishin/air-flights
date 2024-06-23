@@ -62,9 +62,40 @@ final readonly class DateDayHandler extends Handler
     private function getButtons(): array
     {
         $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
-        $buttons = [];
+        $buttons = [
+            [
+                [
+                    'text'          => 'Пн',
+                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                ],
+                [
+                    'text'          => 'Вт',
+                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                ],
+                [
+                    'text'          => 'Ср',
+                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                ],
+                [
+                    'text'          => 'Чт',
+                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                ],
+                [
+                    'text'          => 'Пт',
+                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                ],
+                [
+                    'text'          => 'Сб',
+                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                ],
+                [
+                    'text'          => 'Вс',
+                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                ],
+            ],
+        ];
         $tomorrow = new DateTime('tomorrow');
-        $weekNum = 0;
+        $weekNum = 1;
 
         for ($i = 0; $i < $daysCount; $i++) {
             $day = $i + 1;
@@ -74,7 +105,7 @@ final readonly class DateDayHandler extends Handler
             if (empty($buttons[$weekNum])) {
                 $buttons[$weekNum] = [];
             }
-            if ($i === 0 && $weekNum === 0) {
+            if ($i === 0 && $weekNum === 1) {
                 for ($j = 1; $j < $dayNum; $j++) {
                     $buttons[$weekNum][] = [
                         'text'          => '❌',
