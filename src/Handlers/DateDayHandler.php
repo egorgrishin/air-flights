@@ -77,7 +77,7 @@ final readonly class DateDayHandler extends Handler
             if ($i === 0 && $weekNum === 0) {
                 for ($j = 1; $j < $dayNum; $j++) {
                     $buttons[$weekNum][] = [
-                        'text'          => 'X',
+                        'text'          => '❌',
                         'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
                     ];
                 }
@@ -85,7 +85,7 @@ final readonly class DateDayHandler extends Handler
 
             $cb = "$this->nextState:$this->dep:$this->arr:$this->month:$this->year:$day";
             if ($dt <= $tomorrow) {
-                $day = 'X';
+                $day = '❌';
                 $cb = "$this->selfState:$this->dep:$this->arr:$this->month:$this->year";
             }
             $buttons[$weekNum][] = [
@@ -95,7 +95,7 @@ final readonly class DateDayHandler extends Handler
             if ($i === $daysCount - 1) {
                 for ($j = $dayNum + 1; $j <= 7; $j++) {
                     $buttons[$weekNum][] = [
-                        'text'          => 'X',
+                        'text'          => '❌',
                         'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
                     ];
                 }
