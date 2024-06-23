@@ -64,19 +64,19 @@ final readonly class DateDayHandler extends Handler
         $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
         $buttons = [];
         $tomorrow = new DateTime('tomorrow');
+        $weekNum = 0;
 
         for ($i = 0; $i < $daysCount; $i++) {
-            $index = intdiv($i, 7);
-            if (empty($buttons[$index])) {
-                $buttons[$index] = [];
-            }
-
             $day = $i + 1;
             $dt = DateTime::createFromFormat('Y-n-j H:i', "$this->year-$this->month-$day 00:00");
-            $dayNum = (int)$dt->format('N');
-            if ($i == 0) {
+            $dayNum = (int) $dt->format('N');
+
+            if (empty($buttons[$weekNum])) {
+                $buttons[$weekNum] = [];
+            }
+            if ($i === 0 && $weekNum === 0) {
                 for ($j = 1; $j < $dayNum; $j++) {
-                    $buttons[$index][] = [
+                    $buttons[$weekNum][] = [
                         'text'          => 'X',
                         'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
                     ];
@@ -88,17 +88,20 @@ final readonly class DateDayHandler extends Handler
                 $day = 'X';
                 $cb = "$this->selfState:$this->dep:$this->arr:$this->month:$this->year";
             }
-            $buttons[$index][] = [
+            $buttons[$weekNum][] = [
                 'text'          => $day,
                 'callback_data' => $cb,
             ];
             if ($i === $daysCount - 1) {
                 for ($j = $dayNum + 1; $j <= 7; $j++) {
-                    $buttons[$index][] = [
+                    $buttons[$weekNum][] = [
                         'text'          => 'X',
                         'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
                     ];
                 }
+            }
+            if ($dayNum === 7) {
+                $weekNum++;
             }
         }
 
