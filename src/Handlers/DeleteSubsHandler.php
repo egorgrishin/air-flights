@@ -48,7 +48,9 @@ final readonly class DeleteSubsHandler extends Handler
 
     protected function parseDto(DtoContract $dto): void
     {
-        [, , $this->start, $this->subsId] = explode(':', $dto->data);
+        [, , $start, $subsId] = explode(':', $dto->data);
+        $this->start = (int) $start;
+        $this->subsId = (int) $subsId;
     }
 
     private function getMessageData(array $subs, int $subsCount): array
