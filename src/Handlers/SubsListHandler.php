@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Handlers;
 
 use App\Contracts\DtoContract;
+use App\Core\Container;
 use App\Enums\State;
 use App\Handler;
 use App\Repositories\SubscriptionsRepository;
@@ -96,6 +97,7 @@ final readonly class SubsListHandler extends Handler
             ];
         }
         $end = $this->start + $this->limit;
+        Container::logger()->debug("$this->start, $this->limit, $subsCount");
         if ($end < $subsCount) {
             $buttons[] = [
                 'text'          => '->',
