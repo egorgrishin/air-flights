@@ -63,6 +63,7 @@ final readonly class DeleteSubsHandler extends Handler
                 'inline_keyboard' => [
                     ...$this->getSubsButtons($subs),
                     $this->getNavigationButtons($subsCount),
+                    $this->getMenuButtons(),
                 ],
             ],
         ];
@@ -104,5 +105,15 @@ final readonly class DeleteSubsHandler extends Handler
             ];
         }
         return $buttons;
+    }
+
+    private function getMenuButtons(): array
+    {
+        return [
+            [
+                'text'          => 'Обновить',
+                'callback_data' => "$this->nextState:>:$this->start",
+            ],
+        ];
     }
 }

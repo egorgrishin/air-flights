@@ -38,7 +38,7 @@ class SubscriptionsRepository
         $sql = <<<SQL
         SELECT COUNT(*)
         FROM subscriptions
-        WHERE chat_id = ?
+        WHERE chat_id = ? AND is_active = 1
         SQL;
 
         $stmt = Container::pdo()->prepare($sql);
