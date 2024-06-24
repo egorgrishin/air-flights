@@ -10,11 +10,47 @@ use PDO;
 
 class SubscriptionsRepository
 {
+    public function getChatSubscriptions(string $chatId, int $offset, int $limit): array
+    {
+        $sql = <<<SQL
+        SELECT s.id, chat_id, dep_code, arr_code, date, p.min_price
+        FROM subscriptions s
+        JOIN (
+            SELECT p.subscription_id, MIN(p.price) AS min_price
+            FROM prices p
+            GROUP BY p.subscription_id
+        ) p ON s.id = p.subscription_id
+        WHERE chat_id = :chatId AND is_active = 1
+        ORDER BY date, s.id
+        LIMIT :offset, :limit;
+        SQL;
+
+        $stmt = Container::pdo()->prepare($sql);
+        $stmt->bindParam(':chatId', $chatId);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_FUNC, Subscription::fromPdoByChat());
+    }
+
+    public function getChatSubscriptionsCount(string $chatId): int
+    {
+        $sql = <<<SQL
+        SELECT COUNT(*)
+        FROM subscriptions
+        WHERE chat_id = ?
+        SQL;
+
+        $stmt = Container::pdo()->prepare($sql);
+        $stmt->execute([$chatId]);
+        return $stmt->fetchColumn();
+    }
+
     public function getAll(): array
     {
         return Container::pdo()
             ->query("SELECT id, chat_id, dep_code, arr_code, date FROM subscriptions WHERE is_active = 1 ORDER BY date")
-            ->fetchAll(PDO::FETCH_FUNC, Subscription::fromPdo());
+            ->fetchAll(PDO::FETCH_FUNC, Subscription::fromPdoAll());
     }
 
     public function getAllPrices(array $subscriptionIds): array

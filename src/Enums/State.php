@@ -7,6 +7,8 @@ enum State: string
 {
     case StartSubscription = 'Новая подписка';
     case SubscriptionsList = 'Список подписок';
+    case SubsSelect = 'ss';
+    case SubsDelete = 'ds';
     case SelectDep = 'sda';
     case SelectArr = 'saa';
     case SelectMonth = 'sdm';

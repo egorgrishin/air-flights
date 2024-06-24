@@ -11,6 +11,7 @@ use App\Handlers\DateDayHandler;
 use App\Handlers\DateMonthHandler;
 use App\Handlers\DepNavigationHandler;
 use App\Handlers\StartHandler;
+use App\Handlers\SubsListHandler;
 use Exception;
 
 class HandlerFactory
@@ -28,6 +29,7 @@ class HandlerFactory
             DateDayHandler::validate($dto) => new DateDayHandler($dto),
             AcceptHandler::validate($dto) => new AcceptHandler($dto),
             CancelHandler::validate($dto) => new CancelHandler($dto),
+            SubsListHandler::validate($dto) => new SubsListHandler($dto),
             default => throw new Exception(),
         };
     }
