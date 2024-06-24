@@ -22,13 +22,12 @@ final readonly class StartHandler extends Handler
     public function process(): void
     {
         $this->telegram->send($this->method, [
-            'chat_id' => $this->fromId,
-            'text'    => $this->getText(),
+            'chat_id'      => $this->fromId,
+            'text'         => $this->getText(),
             'reply_markup' => [
                 'keyboard'          => [
-                    [
-                        ['text' => State::StartMonitoring->value],
-                    ],
+                    [['text' => State::StartSubscription->value]],
+                    [['text' => State::SubscriptionsList->value]],
                 ],
                 'one_time_keyboard' => true,
                 'resize_keyboard'   => true,

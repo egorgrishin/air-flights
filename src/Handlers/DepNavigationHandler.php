@@ -27,7 +27,7 @@ final readonly class DepNavigationHandler extends Handler
     public static function validate(DtoContract $dto): bool
     {
         $state = State::SelectDep->value;
-        return $dto->data === State::StartMonitoring->value
+        return $dto->data === State::StartSubscription->value
             || preg_match("/^$state:[<>]:\d+$/", $dto->data) === 1;
     }
 
@@ -43,7 +43,7 @@ final readonly class DepNavigationHandler extends Handler
 
     protected function parseDto(DtoContract $dto): void
     {
-        $data = $dto->data === State::StartMonitoring->value ? "$this->selfState:>:0" : $dto->data;
+        $data = $dto->data === State::StartSubscription->value ? "$this->selfState:>:0" : $dto->data;
         [, $sign, $index] = explode(':', $data);
         $this->start = (int) ($sign === '>' ? $index : ($index - 5));
         $this->end = $this->start + 5;
