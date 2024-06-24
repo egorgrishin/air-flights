@@ -43,7 +43,7 @@ final readonly class Subscription
 
     public static function fromPdoByChat(): callable
     {
-        return function (int $id, string $chatId, string $dep, string $arr, string $date, float $minPrice): Subscription {
+        return function (int $id, string $chatId, string $dep, string $arr, string $date, ?float $minPrice): Subscription {
             return new self($chatId, $dep, $arr, $date, $id, minPrice: $minPrice);
         };
     }
