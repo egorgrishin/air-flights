@@ -111,7 +111,7 @@ final readonly class SubsListHandler extends Handler
         return [
             [
                 'text'          => 'Обновить',
-                'callback_data' => "$this->nextState:>:$this->start",
+                'callback_data' => "$this->selfState:>:$this->start",
             ],
         ];
     }
