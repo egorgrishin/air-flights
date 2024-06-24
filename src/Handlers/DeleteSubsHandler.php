@@ -10,9 +10,10 @@ use App\Repositories\SubscriptionsRepository;
 use App\VO\Subscription;
 use DateTime;
 
-final readonly class SubsListHandler extends Handler
+final readonly class DeleteSubsHandler extends Handler
 {
     private SubscriptionsRepository $repository;
+    private int $subsId;
     private int $start;
     private int $limit;
     private string $selfState;
@@ -29,13 +30,13 @@ final readonly class SubsListHandler extends Handler
 
     public static function validate(DtoContract $dto): bool
     {
-        $state = State::SubsSelect->value;
-        return $dto->data === State::SubscriptionsList->value
-            || preg_match("/^$state:[<>]:\d+$/", $dto->data) === 1;
+        $state = State::SubsDelete->value;
+        return preg_match("/^$state:[<>]:\d+:\d+$/", $dto->data) === 1;
     }
 
     public function process(): void
     {
+        $this->repository->blockSubscriptionById($this->subsId, (string) $this->fromId);
         $subs = $this->repository->getChatSubscriptions((string) $this->fromId, $this->start, $this->limit);
         $subsCount = $this->repository->getChatSubscriptionsCount((string) $this->fromId);
 
@@ -47,9 +48,7 @@ final readonly class SubsListHandler extends Handler
 
     protected function parseDto(DtoContract $dto): void
     {
-        $data = $dto->data === State::SubscriptionsList->value ? "$this->selfState:>:0" : $dto->data;
-        [, $sign, $index] = explode(':', $data);
-        $this->start = (int) ($sign === '>' ? $index : ($index - 5));
+        [, , $this->start, $this->subsId] = explode(':', $dto->data);
     }
 
     private function getMessageData(array $subs, int $subsCount): array
@@ -79,7 +78,7 @@ final readonly class SubsListHandler extends Handler
             $buttons[] = [
                 [
                     'text'          => "$date $sub->depCode-$sub->arrCode {$sub->minPrice}р.",
-                    'callback_data' => "$this->nextState:>:$this->start:$sub->id",
+                    'callback_data' => "$this->nextState:$sub->id",
                 ],
             ];
         }

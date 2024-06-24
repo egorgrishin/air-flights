@@ -9,6 +9,7 @@ use App\Handlers\ArrNavigationHandler;
 use App\Handlers\CancelHandler;
 use App\Handlers\DateDayHandler;
 use App\Handlers\DateMonthHandler;
+use App\Handlers\DeleteSubsHandler;
 use App\Handlers\DepNavigationHandler;
 use App\Handlers\StartHandler;
 use App\Handlers\SubsListHandler;
@@ -30,6 +31,7 @@ class HandlerFactory
             AcceptHandler::validate($dto) => new AcceptHandler($dto),
             CancelHandler::validate($dto) => new CancelHandler($dto),
             SubsListHandler::validate($dto) => new SubsListHandler($dto),
+            DeleteSubsHandler::validate($dto) => new DeleteSubsHandler($dto),
             default => throw new Exception(),
         };
     }

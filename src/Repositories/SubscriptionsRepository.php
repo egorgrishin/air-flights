@@ -87,6 +87,13 @@ WHERE
             ->execute();
     }
 
+    public function blockSubscriptionById(int $id, string $chatId): void
+    {
+        Container::pdo()
+            ->prepare("UPDATE subscriptions SET is_active = 0 WHERE id = ? AND chat_id = ?")
+            ->execute([$id, $chatId]);
+    }
+
     public function createPrices(array $prices): void
     {
         $values = str_repeat('(?, ?, ?), ', count($prices) - 1) . '(?, ?, ?)';
