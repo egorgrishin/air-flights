@@ -101,7 +101,7 @@ final readonly class SuccessHandler extends Add
     private function createSubscription(): int
     {
         $subscription = new Subscription(
-            (string) $this->fromId,
+            $this->fromId,
             $this->dep,
             $this->arr,
             $this->date,

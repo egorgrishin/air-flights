@@ -7,7 +7,7 @@ use App\Contracts\DtoContract;
 
 final readonly class TextDto implements DtoContract
 {
-    public int $fromId;
+    public string $fromId;
     public string $data;
 
     public function __construct(array $body)

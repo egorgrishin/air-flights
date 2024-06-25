@@ -13,7 +13,7 @@ abstract readonly class Handler implements HandlerContract
 {
     protected Telegram $telegram;
     protected TelegramMethod $method;
-    protected int $fromId;
+    protected string $fromId;
     protected ?int $messageId;
 
     public function __construct(DtoContract $dto)

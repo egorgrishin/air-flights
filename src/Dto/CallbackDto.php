@@ -7,7 +7,7 @@ use App\Contracts\DtoContract;
 
 final readonly class CallbackDto implements DtoContract
 {
-    public int $fromId;
+    public string $fromId;
     public int $messageId;
     public string $callbackQueryId;
     public string $data;

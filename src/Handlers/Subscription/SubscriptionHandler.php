@@ -36,11 +36,11 @@ final readonly class SubscriptionHandler extends Handler
     public function process(): void
     {
         if ($this->subsId) {
-            $this->repository->blockSubscriptionById($this->subsId, (string) $this->fromId);
+            $this->repository->blockSubscriptionById($this->subsId, $this->fromId);
         }
 
-        $subs = $this->repository->getChatSubscriptions((string) $this->fromId, $this->offset, $this->limit);
-        $subsCount = $this->repository->getChatSubscriptionsCount((string) $this->fromId);
+        $subs = $this->repository->getChatSubscriptions($this->fromId, $this->offset, $this->limit);
+        $subsCount = $this->repository->getChatSubscriptionsCount($this->fromId);
 
         $this->telegram->send(
             $this->method,
