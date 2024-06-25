@@ -29,7 +29,7 @@ final class AirportRepository
         $stmt->execute();
         return $stmt->fetchAll(
             PDO::FETCH_FUNC,
-            function (string $code, string $cityCode, ?int $sort, string $title) {
+            function (string $code, ?string $cityCode, ?int $sort, string $title) {
                 return new Airport($code, $cityCode, $sort, $title);
             }
         );
