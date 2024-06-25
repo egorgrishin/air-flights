@@ -27,13 +27,12 @@ final class AirportRepository
         $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
-        $stmt->setFetchMode(
+        return $stmt->fetchAll(
             PDO::FETCH_FUNC,
             function (string $code, string $cityCode, ?int $sort, string $title) {
                 return new Airport($code, $cityCode, $sort, $title);
             }
         );
-        return $stmt->fetchAll();
     }
 
     public function getByCode(array $codes): array
