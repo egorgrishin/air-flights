@@ -50,9 +50,15 @@ final readonly class DateDayHandler extends Add
             ,
             $this->dep,
             $this->arr,
-            $this->month,
+            $month,
             $this->year,
         ] = $data;
+        $this->month = $this->formatNum($month);
+    }
+
+    private function formatNum(string $num): string
+    {
+        return (int) $num < 10 ? '0' . $num : $num;
     }
 
     private function getButtons(): array
