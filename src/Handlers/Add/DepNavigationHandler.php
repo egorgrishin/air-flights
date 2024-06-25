@@ -76,7 +76,7 @@ final readonly class DepNavigationHandler extends Add
             $buttons[] = [
                 [
                     'text'          => $airport->title,
-                    'callback_data' => self::NEXT . ":$airport->code:>:0",
+                    'callback_data' => self::NEXT . ":$airport->code:0",
                 ],
             ];
         }
