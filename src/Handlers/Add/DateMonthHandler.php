@@ -84,6 +84,6 @@ final readonly class DateMonthHandler extends Add
 
     protected function getPrevCbData(): ?string
     {
-        return self::PREV . ":$this->dep:>:0";
+        return self::PREV . ":$this->dep:0";
     }
 }
