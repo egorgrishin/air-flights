@@ -96,9 +96,6 @@ function savePrices(array $prices, array $oldPrices): void
 {
     global $repository;
     foreach ($prices as $price) {
-        if (!$price->price) {
-            continue;
-        }
         empty($oldPrices[$price->companyCode])
             ? $repository->createPrices([$price])
             : $repository->updatePrice($price);
