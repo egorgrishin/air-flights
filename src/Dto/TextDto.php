@@ -12,7 +12,7 @@ final readonly class TextDto implements DtoContract
 
     public function __construct(array $body)
     {
-        $this->fromId = $body['message']['from']['id'];
+        $this->fromId = (string) $body['message']['from']['id'];
         $this->data = $body['message']['text'];
     }
 }
