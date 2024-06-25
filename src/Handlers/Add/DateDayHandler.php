@@ -113,7 +113,7 @@ final readonly class DateDayHandler extends Add
 
     private function addButtons(int $start, int $end, int $weekNum, array &$buttons): void
     {
-        for ($j = $start; $end; $j++) {
+        for ($j = $start; $j < $end; $j++) {
             $buttons[$weekNum][] = [
                 'text'          => '❌',
                 'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
