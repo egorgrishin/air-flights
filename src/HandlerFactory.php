@@ -14,8 +14,7 @@ use App\Handlers\Add\SuccessHandler;
 use App\Handlers\Base\CancelHandler;
 use App\Handlers\Base\NotFoundHandler;
 use App\Handlers\Base\StartHandler;
-use App\Handlers\Subs\DeleteSubsHandler;
-use App\Handlers\Subs\SubsListHandler;
+use App\Handlers\Subscription\SubscriptionHandler;
 
 class HandlerFactory
 {
@@ -30,8 +29,7 @@ class HandlerFactory
             AcceptHandler::validate($dto)        => new AcceptHandler($dto),
             SuccessHandler::validate($dto)       => new SuccessHandler($dto),
             CancelHandler::validate($dto)        => new CancelHandler($dto),
-            SubsListHandler::validate($dto)      => new SubsListHandler($dto),
-            DeleteSubsHandler::validate($dto)    => new DeleteSubsHandler($dto),
+            SubscriptionHandler::validate($dto)  => new SubscriptionHandler($dto),
             default                              => new NotFoundHandler($dto),
         };
     }
