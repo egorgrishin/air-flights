@@ -29,11 +29,6 @@ final readonly class DateMonthHandler extends Add
     private string $dep;
     private string $arr;
 
-    public function __construct(DtoContract $dto)
-    {
-        parent::__construct($dto);
-    }
-
     public static function validate(DtoContract $dto): bool
     {
         $state = self::SELF;
@@ -67,13 +62,12 @@ final readonly class DateMonthHandler extends Add
         $originalMonth = (int) date('n');
         $originalYear = (int) date('Y');
 
-        for ($i = 0; $i < 6; $i++) {
-            $month = $originalMonth + $i;
+        for ($month = $originalMonth; $month < $originalMonth + 6; $month++) {
             $monthIndex = $month - 1;
             $year = $originalYear + intdiv($monthIndex, 12);
             $buttons[] = [
                 [
-                    'text'          => self::MONTHS[$monthIndex % 12] . ", {$year}г.",
+                    'text'          => self::MONTHS[$monthIndex % 12] . ", $year",
                     'callback_data' => self::NEXT . ":$this->dep:$this->arr:$month:$year",
                 ],
             ];
