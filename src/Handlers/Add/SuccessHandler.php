@@ -70,7 +70,7 @@ final readonly class SuccessHandler extends Add
 
     private function formatNum(string $num): string
     {
-        return (int) $num < 10 ? '0' . $num : $num;
+        return (int) $num < 10 ? '0' . (int) $num : $num;
     }
 
     private function getMessageData(Airport $depAirport, Airport $arrAirport): array

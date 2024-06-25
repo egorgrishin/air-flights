@@ -58,7 +58,7 @@ final readonly class DateDayHandler extends Add
 
     private function formatNum(string $num): string
     {
-        return (int) $num < 10 ? '0' . $num : $num;
+        return (int) $num < 10 ? '0' . (int) $num : $num;
     }
 
     private function getButtons(): array
