@@ -14,7 +14,7 @@ final readonly class ArrNavigationHandler extends Add
     private const NEXT = State::SelectMonth->value;
     private AirportRepository $repository;
     private string $dep;
-    private int $start;
+    private int $offset;
     private int $limit;
 
     public function __construct(DtoContract $dto)
@@ -32,7 +32,7 @@ final readonly class ArrNavigationHandler extends Add
 
     public function process(): void
     {
-        $airports = $this->repository->getAll($this->start, $this->limit, $this->dep);
+        $airports = $this->repository->getAll($this->offset, $this->limit, $this->dep);
         $airportsCount = $this->repository->getCount($this->dep);
 
         $this->telegram->send($this->method, [
@@ -51,8 +51,8 @@ final readonly class ArrNavigationHandler extends Add
 
     protected function parseDto(DtoContract $dto): void
     {
-        [, $this->dep, $start] = explode(':', $dto->data);
-        $this->start = (int) $start;
+        [, $this->dep, $offset] = explode(':', $dto->data);
+        $this->offset = (int) $offset;
     }
 
     private function getAirportButtons(array $airports): array
@@ -72,14 +72,14 @@ final readonly class ArrNavigationHandler extends Add
     private function getNavigationButtons(int $airportsCount): array
     {
         $navButtons = [];
-        if ($this->start > 0) {
-            $newStart = max(0, $this->start - $this->limit);
+        if ($this->offset > 0) {
+            $newStart = max(0, $this->offset - $this->limit);
             $navButtons[] = [
                 'text'          => '<-',
                 'callback_data' => self::SELF . ":$this->dep:$newStart",
             ];
         }
-        $end = $this->start + $this->limit;
+        $end = $this->offset + $this->limit;
         if ($end < $airportsCount) {
             $navButtons[] = [
                 'text'          => '->',

@@ -14,7 +14,7 @@ final readonly class DepNavigationHandler extends Add
     private const SELF_ANALOG = State::StartSubscription->value;
     private const NEXT = State::SelectArr->value;
     private AirportRepository $repository;
-    private int $start;
+    private int $offset;
     private int $limit;
 
     public function __construct(DtoContract $dto)
@@ -33,7 +33,7 @@ final readonly class DepNavigationHandler extends Add
 
     public function process(): void
     {
-        $airports = $this->repository->getAll($this->start, $this->limit);
+        $airports = $this->repository->getAll($this->offset, $this->limit);
         $airportsCount = $this->repository->getCount();
 
         $this->telegram->send(
@@ -45,8 +45,8 @@ final readonly class DepNavigationHandler extends Add
     protected function parseDto(DtoContract $dto): void
     {
         $data = $dto->data === self::SELF_ANALOG ? self::SELF . ':0' : $dto->data;
-        [, $start] = explode(':', $data);
-        $this->start = (int) $start;
+        [, $offset] = explode(':', $data);
+        $this->offset = (int) $offset;
     }
 
     private function getMessageData(array $airports, int $airportsCount): array
@@ -86,14 +86,14 @@ final readonly class DepNavigationHandler extends Add
     private function getNavigationButtons(int $airportsCount): array
     {
         $buttons = [];
-        if ($this->start > 0) {
-            $newStart = max(0, $this->start - $this->limit);
+        if ($this->offset > 0) {
+            $newStart = max(0, $this->offset - $this->limit);
             $buttons[] = [
                 'text'          => '<-',
                 'callback_data' => self::SELF . ":$newStart",
             ];
         }
-        $end = $this->start + $this->limit;
+        $end = $this->offset + $this->limit;
         if ($end < $airportsCount) {
             $buttons[] = [
                 'text'          => '->',

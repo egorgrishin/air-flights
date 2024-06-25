@@ -16,9 +16,15 @@ final readonly class StartHandler extends Handler
 
     public function process(): void
     {
+        $text = <<<TEXT
+        Привет!
+        Я - бот Air Flights и я занимаюсь мониторингом цен на авиабилеты!
+        Выберите команду из меню
+        TEXT;
+
         $this->telegram->send($this->method, [
             'chat_id'      => $this->fromId,
-            'text'         => $this->getText(),
+            'text'         => $text,
             'reply_markup' => [
                 'keyboard'          => [
                     [['text' => State::StartSubscription->value]],
@@ -28,15 +34,6 @@ final readonly class StartHandler extends Handler
                 'resize_keyboard'   => true,
             ],
         ]);
-    }
-
-    private function getText(): string
-    {
-        return <<<TEXT
-        Привет!
-        Я - бот Air Flights и я занимаюсь мониторингом цен на авиабилеты!
-        Выберите команду из меню
-        TEXT;
     }
 
     protected function parseDto(DtoContract $dto): void
