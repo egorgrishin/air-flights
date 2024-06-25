@@ -12,7 +12,12 @@ abstract readonly class Add extends Handler
     {
         $prevData = $this->getPrevCbData();
         return [
-            ...($prevData ?: []),
+            ...(!$prevData ? [] : [
+                [
+                    'text'          => 'Назад',
+                    'callback_data' => $prevData,
+                ],
+            ]),
             [
                 'text'          => 'Отменить',
                 'callback_data' => State::CancelMonitoring->value,
