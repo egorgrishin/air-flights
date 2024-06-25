@@ -1,14 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace App;
+namespace App\Handlers;
 
 use App\Contracts\DtoContract;
+use App\Contracts\HandlerContract;
 use App\Core\Telegram;
 use App\Dto\CallbackDto;
 use App\Enums\TelegramMethod;
 
-abstract readonly class Handler
+abstract readonly class Handler implements HandlerContract
 {
     protected Telegram $telegram;
     protected TelegramMethod $method;
@@ -32,8 +33,9 @@ abstract readonly class Handler
             $this->method = TelegramMethod::Send;
             $this->messageId = null;
         }
-
     }
+
+    abstract public static function validate(DtoContract $dto): bool;
 
     abstract public function process(): void;
 

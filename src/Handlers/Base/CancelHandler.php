@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Handlers;
+namespace App\Handlers\Base;
 
 use App\Contracts\DtoContract;
 use App\Enums\State;
-use App\Handler;
+use App\Handlers\Handler;
 
 final readonly class CancelHandler extends Handler
 {

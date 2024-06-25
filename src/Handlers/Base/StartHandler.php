@@ -1,19 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Handlers;
+namespace App\Handlers\Base;
 
 use App\Contracts\DtoContract;
 use App\Enums\State;
-use App\Handler;
+use App\Handlers\Handler;
 
 final readonly class StartHandler extends Handler
 {
-    public function __construct(DtoContract $dto)
-    {
-        parent::__construct($dto);
-    }
-
     public static function validate(DtoContract $dto): bool
     {
         return $dto->data === '/start';
@@ -38,10 +33,10 @@ final readonly class StartHandler extends Handler
     private function getText(): string
     {
         return <<<TEXT
-Привет!
-Я - бот Air Flights и я занимаюсь мониторингом цен на авиабилеты!
-Выберите команду из меню
-TEXT;
+        Привет!
+        Я - бот Air Flights и я занимаюсь мониторингом цен на авиабилеты!
+        Выберите команду из меню
+        TEXT;
     }
 
     protected function parseDto(DtoContract $dto): void

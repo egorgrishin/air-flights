@@ -1,34 +1,30 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Handlers;
+namespace App\Handlers\Add;
 
 use App\Contracts\DtoContract;
 use App\Enums\State;
-use App\Handler;
 use DateTime;
 
-final readonly class DateDayHandler extends Handler
+final readonly class DateDayHandler extends Add
 {
+    private const PREV = State::SelectMonth->value;
+    private const SELF = State::SelectDay->value;
+    private const NEXT = State::AcceptMonitoring->value;
     private string $dep;
     private string $arr;
     private string $month;
     private string $year;
-    private string $prevState;
-    private string $selfState;
-    private string $nextState;
 
     public function __construct(DtoContract $dto)
     {
-        $this->prevState = State::SelectMonth->value;
-        $this->selfState = State::SelectDay->value;
-        $this->nextState = State::AcceptMonitoring->value;
         parent::__construct($dto);
     }
 
     public static function validate(DtoContract $dto): bool
     {
-        $state = State::SelectDay->value;
+        $state = self::SELF;
         return preg_match("/^$state:[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}$/", $dto->data) === 1;
     }
 
@@ -66,31 +62,31 @@ final readonly class DateDayHandler extends Handler
             [
                 [
                     'text'          => 'Пн',
-                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                 ],
                 [
                     'text'          => 'Вт',
-                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                 ],
                 [
                     'text'          => 'Ср',
-                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                 ],
                 [
                     'text'          => 'Чт',
-                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                 ],
                 [
                     'text'          => 'Пт',
-                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                 ],
                 [
                     'text'          => 'Сб',
-                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                 ],
                 [
                     'text'          => 'Вс',
-                    'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                 ],
             ],
         ];
@@ -109,15 +105,15 @@ final readonly class DateDayHandler extends Handler
                 for ($j = 1; $j < $dayNum; $j++) {
                     $buttons[$weekNum][] = [
                         'text'          => '❌',
-                        'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                        'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                     ];
                 }
             }
 
-            $cb = "$this->nextState:$this->dep:$this->arr:$this->month:$this->year:$day";
+            $cb = self::NEXT . ":$this->dep:$this->arr:$this->month:$this->year:$day";
             if ($dt <= $tomorrow) {
                 $day = '❌';
-                $cb = "$this->selfState:$this->dep:$this->arr:$this->month:$this->year";
+                $cb = self::SELF . ":$this->dep:$this->arr:$this->month:$this->year";
             }
             $buttons[$weekNum][] = [
                 'text'          => $day,
@@ -127,7 +123,7 @@ final readonly class DateDayHandler extends Handler
                 for ($j = $dayNum + 1; $j <= 7; $j++) {
                     $buttons[$weekNum][] = [
                         'text'          => '❌',
-                        'callback_data' => "$this->selfState:$this->dep:$this->arr:$this->month:$this->year",
+                        'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
                     ];
                 }
             }
@@ -139,17 +135,8 @@ final readonly class DateDayHandler extends Handler
         return $buttons;
     }
 
-    private function getMenuButtons(): array
+    protected function getPrevCbData(): ?string
     {
-        return [
-            [
-                'text'          => 'Назад',
-                'callback_data' => "$this->prevState:$this->dep:$this->arr",
-            ],
-            [
-                'text'          => 'Отменить',
-                'callback_data' => State::CancelMonitoring->value,
-            ],
-        ];
+        return self::PREV . ":$this->dep:$this->arr";
     }
 }

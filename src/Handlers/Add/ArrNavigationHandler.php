@@ -1,36 +1,32 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Handlers;
+namespace App\Handlers\Add;
 
 use App\Contracts\DtoContract;
 use App\Enums\State;
-use App\Handler;
 use App\Repositories\AirportRepository;
 use App\VO\Airport;
 
-final readonly class ArrNavigationHandler extends Handler
+final readonly class ArrNavigationHandler extends Add
 {
+    private const PREV = State::SelectDep->value;
+    private const SELF = State::SelectArr->value;
+    private const NEXT = State::SelectMonth->value;
     private AirportRepository $repository;
     private string $dep;
     private int $start;
     private int $end;
-    private string $prevState;
-    private string $selfState;
-    private string $nextState;
 
     public function __construct(DtoContract $dto)
     {
         $this->repository = new AirportRepository();
-        $this->prevState = State::SelectDep->value;
-        $this->selfState = State::SelectArr->value;
-        $this->nextState = State::SelectMonth->value;
         parent::__construct($dto);
     }
 
     public static function validate(DtoContract $dto): bool
     {
-        $state = State::SelectArr->value;
+        $state = self::SELF;
         return preg_match("/^$state:[A-Z]{3}:[<>]:\d+$/", $dto->data) === 1;
     }
 
@@ -74,7 +70,7 @@ final readonly class ArrNavigationHandler extends Handler
             $buttons[] = [
                 [
                     'text'          => $airport->title,
-                    'callback_data' => "$this->nextState:$this->dep:$airport->code",
+                    'callback_data' => self::NEXT . ":$this->dep:$airport->code",
                 ],
             ];
         }
@@ -87,29 +83,20 @@ final readonly class ArrNavigationHandler extends Handler
         if ($this->start > 0) {
             $navButtons[] = [
                 'text'          => '<-',
-                'callback_data' => "$this->selfState:$this->dep:<:$this->start",
+                'callback_data' => self::SELF . ":$this->dep:<:$this->start",
             ];
         }
         if ($this->end < $airportsCount) {
             $navButtons[] = [
                 'text'          => '->',
-                'callback_data' => "$this->selfState:$this->dep:>:$this->end",
+                'callback_data' => self::SELF . ":$this->dep:>:$this->end",
             ];
         }
         return $navButtons;
     }
 
-    private function getMenuButtons(): array
+    protected function getPrevCbData(): ?string
     {
-        return [
-            [
-                'text'          => 'Назад',
-                'callback_data' => "$this->prevState:>:0",
-            ],
-            [
-                'text'          => 'Отменить',
-                'callback_data' => State::CancelMonitoring->value,
-            ],
-        ];
+        return self::PREV . ":>:0";
     }
 }

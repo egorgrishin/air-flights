@@ -1,19 +1,18 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Handlers;
+namespace App\Handlers\Subs;
 
 use App\Contracts\DtoContract;
 use App\Enums\State;
-use App\Handler;
+use App\Handlers\Handler;
 use App\Repositories\SubscriptionsRepository;
 use App\VO\Subscription;
 use DateTime;
 
-final readonly class DeleteSubsHandler extends Handler
+final readonly class SubsListHandler extends Handler
 {
     private SubscriptionsRepository $repository;
-    private int $subsId;
     private int $start;
     private int $limit;
     private string $selfState;
@@ -30,13 +29,13 @@ final readonly class DeleteSubsHandler extends Handler
 
     public static function validate(DtoContract $dto): bool
     {
-        $state = State::SubsDelete->value;
-        return preg_match("/^$state:[<>]:\d+:\d+$/", $dto->data) === 1;
+        $state = State::SubsSelect->value;
+        return $dto->data === State::SubscriptionsList->value
+            || preg_match("/^$state:[<>]:\d+$/", $dto->data) === 1;
     }
 
     public function process(): void
     {
-        $this->repository->blockSubscriptionById($this->subsId, (string) $this->fromId);
         $subs = $this->repository->getChatSubscriptions((string) $this->fromId, $this->start, $this->limit);
         $subsCount = $this->repository->getChatSubscriptionsCount((string) $this->fromId);
 
@@ -48,9 +47,9 @@ final readonly class DeleteSubsHandler extends Handler
 
     protected function parseDto(DtoContract $dto): void
     {
-        [, , $start, $subsId] = explode(':', $dto->data);
-        $this->start = (int) $start;
-        $this->subsId = (int) $subsId;
+        $data = $dto->data === State::SubscriptionsList->value ? "$this->selfState:>:0" : $dto->data;
+        [, $sign, $index] = explode(':', $data);
+        $this->start = (int) ($sign === '>' ? $index : ($index - 5));
     }
 
     private function getMessageData(array $subs, int $subsCount): array
@@ -81,7 +80,7 @@ final readonly class DeleteSubsHandler extends Handler
             $buttons[] = [
                 [
                     'text'          => "$date $sub->depCode-$sub->arrCode {$sub->minPrice}р.",
-                    'callback_data' => "$this->nextState:$sub->id",
+                    'callback_data' => "$this->nextState:>:$this->start:$sub->id",
                 ],
             ];
         }
