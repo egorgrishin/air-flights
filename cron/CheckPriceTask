@@ -11,6 +11,7 @@ use App\VO\Subscription;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+$temp = [];
 $repository = new SubscriptionsRepository();
 $subscriptions = $repository->getAll();
 $subscriptionIds = array_column($subscriptions, 'id');
@@ -26,15 +27,30 @@ foreach ($prices as $price) {
 
 /** @var Subscription $subscription */
 foreach ($subscriptions as $subscription) {
-    $prices = (new GetPriceService())->run(
+    $prices = getPrices($subscription);
+    checkPrices($subscription, $prices, $data[$subscription->id]);
+    savePrices($prices, $data[$subscription->id]);
+}
+
+/**
+ * Возвращает массив цен на билеты, кэшируя результаты запроса на время жизни скрипта
+ * @param Subscription $subscription
+ * @return array
+ */
+function getPrices(Subscription $subscription): array
+{
+    global $temp;
+    $key = "$subscription->id.$subscription->depCode.$subscription->arrCode";
+    if (!empty($temp[$key])) {
+        return $temp[$key];
+    }
+
+    return $temp[$key] = (new GetPriceService())->run(
         $subscription->id,
         $subscription->depCode,
         $subscription->arrCode,
         DateTime::createFromFormat('Y-m-d', $subscription->date),
     );
-
-    checkPrices($subscription, $prices, $data[$subscription->id]);
-    savePrices($prices, $data[$subscription->id]);
 }
 
 /**
