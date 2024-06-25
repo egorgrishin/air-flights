@@ -34,10 +34,11 @@ final readonly class DepNavigationHandler extends Add
     public function process(): void
     {
         $airports = $this->repository->getAll($this->start, $this->limit);
+        $airportsCount = $this->repository->getCount();
 
         $this->telegram->send(
             $this->method,
-            $this->getMessageData($airports),
+            $this->getMessageData($airports, $airportsCount),
         );
     }
 
@@ -48,7 +49,7 @@ final readonly class DepNavigationHandler extends Add
         $this->start = (int) ($sign === '>' ? $index : ($index - 5));
     }
 
-    private function getMessageData(array $airports): array
+    private function getMessageData(array $airports, int $airportsCount): array
     {
         return [
             'chat_id'      => $this->fromId,
@@ -57,7 +58,7 @@ final readonly class DepNavigationHandler extends Add
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getAirportButtons($airports),
-                    $this->getNavigationButtons(count($airports)),
+                    $this->getNavigationButtons($airportsCount),
                     $this->getMenuButtons(),
                 ],
             ],

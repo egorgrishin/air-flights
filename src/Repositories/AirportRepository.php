@@ -35,6 +35,13 @@ final class AirportRepository
         );
     }
 
+    public function getCount(): int
+    {
+        return Container::pdo()
+            ->query("SELECT COUNT(*) FROM airports")
+            ->fetchColumn();
+    }
+
     public function getByCode(array $codes): array
     {
         $questions = implode(',', array_fill(0, count($codes), '?'));
