@@ -39,9 +39,9 @@ class GetPriceService
     {
         for ($i = 0; $i < 5; $i++) {
             try {
-                return $searcher->run($dep, $arr, $dt);
+                return $searcher->getPrice($dep, $arr, $dt);
             } catch (Throwable $exception) {
-                Container::logger()->error($exception);
+                Container::logger()->error($exception->getMessage());
                 usleep(500_000);
             }
         }

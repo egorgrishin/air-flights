@@ -7,7 +7,13 @@ use DateTime;
 
 interface SearcherContract
 {
-    public function run(string $dep, string $arr, DateTime $dateTime): ?float;
-
+    /**
+     * Возвращает код авиакомпании
+     */
     public function getCode(): string;
+
+    /**
+     * Возвращает цену на авиабилет с указанными параметрами
+     */
+    public function getPrice(string $dep, string $arr, DateTime $dt): ?float;
 }

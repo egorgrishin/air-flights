@@ -4,95 +4,106 @@ declare(strict_types=1);
 namespace App\Searchers;
 
 use App\Contracts\SearcherContract;
+use App\Exceptions\SearcherError;
 use DateTime;
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Http\Message\ResponseInterface;
 
 class SmartaviaSearch implements SearcherContract
 {
     public const CODE = 'SmartAvia';
+    private const URI = 'https://flysmartavia.com/search/calendar';
 
+    /**
+     * Возвращает код авиакомпании
+     */
     public function getCode(): string
     {
         return self::CODE;
     }
 
     /**
+     * Возвращает цену на авиабилет с указанными параметрами
      * @throws GuzzleException
-     * @throws Exception
+     * @throws SearcherError
      */
-    public function run(string $dep, string $arr, DateTime $dateTime): ?float
+    public function getPrice(string $dep, string $arr, DateTime $dt): ?float
     {
-        $date = $dateTime->format('Y-m-d');
-        $params = [
-            'origin'              => $dep,
-            'destination'         => $arr,
-            'calendar_date_start' => $date,
-            'calendar_date_end'   => $date,
-        ];
-        $body = $this->toBody($params);
+        $response = $this->sendRequest($dep, $arr, $dt);
+        $data = $this->getResponseData($response);
 
-        $uri = 'https://flysmartavia.com/search/calendar';
+        return $this->parse($dep, $arr, $dt, $data) ?: null;
+    }
+
+    /**
+     * Отправляет запрос к API а/к "SmartAvia" для получения цен на авиабилеты
+     * @throws GuzzleException
+     */
+    private function sendRequest(string $dep, string $arr, DateTime $dt): ResponseInterface
+    {
         $client = new Client();
-        $response = $client->post($uri, [
-            'body'    => $body,
+        return $client->post(self::URI, [
+            'body'    => http_build_query([
+                'origin'              => $dep,
+                'destination'         => $arr,
+                'calendar_date_start' => $dt->format('Y-m-d'),
+                'calendar_date_end'   => $dt->format('Y-m-d'),
+            ]),
             'headers' => [
                 "Accept"       => "application/json",
                 "Content-Type" => "application/x-www-form-urlencoded",
             ],
         ]);
-
-        if ($response->getStatusCode() !== 200) {
-            throw new Exception('Error Smartavia');
-        }
-        $data = json_decode($response->getBody()->getContents(), true);
-        if (($data['status'] ?? '0') !== 'ok') {
-            throw new Exception('Error Smartavia');
-        }
-
-        // Может быть 0
-        return $this->parse($data, $params) ?: null;
-    }
-
-    private function toBody(array $params): string
-    {
-        $body = [];
-        foreach ($params as $key => $value) {
-            $body[] = "$key=$value";
-        }
-        return implode('&', $body);
     }
 
     /**
-     * @throws Exception
+     * Возвращает тело ответа в виде ассоциативного массива
+     * @throws SearcherError
      */
-    private function parse(array $data, array $params): float
+    private function getResponseData(ResponseInterface $response): array
     {
+        if ($response->getStatusCode() !== 200) {
+            throw new SearcherError('Error Smartavia');
+        }
+
+        $body = $response->getBody()->getContents();
+        return json_decode($body, true);
+    }
+
+    /**
+     * Возвращает цену из данных, вернувшихся из API
+     * @throws SearcherError
+     */
+    private function parse(string $dep, string $arr, DateTime $dt, array $data): float
+    {
+        if (($data['status'] ?? '0') !== 'ok') {
+            throw new SearcherError("Error Smartavia: [status] is not equal [ok]");
+        }
         if (empty($data['data'])) {
-            throw new Exception('Parse Error Smartavia [data]');
+            throw new SearcherError("Error Smartavia: [data] are empty");
         }
 
         $data = $data['data'];
-        $key = $params['origin'] . '-' . $params['destination'];
+        $key = "$dep-$arr";
         if (empty($data[$key])) {
-            throw new Exception('Parse Error Smartavia [$key]');
+            throw new SearcherError("Error Smartavia: [$key] are empty");
         }
 
         $data = $data[$key];
-        $date = $params['calendar_date_start'];
+        $date = $dt->format('Y-m-d');
         if (empty($data[$date])) {
-            throw new Exception('Parse Error Smartavia [$date]');
+            throw new SearcherError("Error Smartavia: [$date] are empty");
         }
 
         $data = $data[$date];
         if (empty($data['label'])) {
-            throw new Exception('Parse Error Smartavia [label]');
+            throw new SearcherError("Error Smartavia: [label] are empty");
         }
 
         $data = $data['label'];
         if (empty($data['value'])) {
-            throw new Exception('Parse Error Smartavia [value]');
+            throw new SearcherError("Error Smartavia: [value] are empty");
         }
 
         return (float) str_replace([' ', '₽'], '', $data['value']);
