@@ -28,7 +28,7 @@ final readonly class DepNavigationHandler extends Add
     {
         $state = self::SELF;
         return $dto->data === self::SELF_ANALOG
-            || preg_match("/^$state:[<>]:\d+$/", $dto->data) === 1;
+            || preg_match("/^$state:\d+$/", $dto->data) === 1;
     }
 
     public function process(): void
@@ -44,9 +44,9 @@ final readonly class DepNavigationHandler extends Add
 
     protected function parseDto(DtoContract $dto): void
     {
-        $data = $dto->data === self::SELF_ANALOG ? self::SELF . ':>:0' : $dto->data;
-        [, $sign, $index] = explode(':', $data);
-        $this->start = (int) ($sign === '>' ? $index : ($index - 5));
+        $data = $dto->data === self::SELF_ANALOG ? self::SELF . ':0' : $dto->data;
+        [, $start] = explode(':', $data);
+        $this->start = (int) $start;
     }
 
     private function getMessageData(array $airports, int $airportsCount): array
@@ -87,16 +87,17 @@ final readonly class DepNavigationHandler extends Add
     {
         $buttons = [];
         if ($this->start > 0) {
+            $newStart = max(0, $this->start - $this->limit);
             $buttons[] = [
                 'text'          => '<-',
-                'callback_data' => self::SELF . ":<:$this->start",
+                'callback_data' => self::SELF . ":$newStart",
             ];
         }
         $end = $this->start + $this->limit;
         if ($end < $airportsCount) {
             $buttons[] = [
                 'text'          => '->',
-                'callback_data' => self::SELF . ":>:$end",
+                'callback_data' => self::SELF . ":$end",
             ];
         }
         return $buttons;
