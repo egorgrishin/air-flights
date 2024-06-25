@@ -9,11 +9,29 @@ use PDO;
 
 final class AirportRepository
 {
-    public function getAll(): array
+    /**
+     * @param int $offset
+     * @param int $limit
+     * @return Airport[]
+     */
+    public function getAll(int $offset, int $limit): array
     {
-        $pdo = Container::pdo();
-        $stmt = $pdo->query("SELECT code, city_code, sort, title FROM airports ORDER BY sort IS NULL, sort");
-        $stmt->setFetchMode(PDO::FETCH_CLASS, Airport::class);
+        $sql = <<<SQL
+        SELECT code, city_code, sort, title
+        FROM airports
+        ORDER BY sort IS NULL, sort
+        LIMIT :offset, :limit
+        SQL;
+
+        $stmt = Container::pdo()->prepare($sql);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->setFetchMode(
+            PDO::FETCH_FUNC,
+            function (string $code, string $cityCode, ?int $sort, string $title) {
+                return new Airport($code, $cityCode, $sort, $title);
+            }
+        );
         return $stmt->fetchAll();
     }
 

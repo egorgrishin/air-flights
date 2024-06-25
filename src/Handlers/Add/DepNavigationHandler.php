@@ -6,6 +6,7 @@ namespace App\Handlers\Add;
 use App\Contracts\DtoContract;
 use App\Enums\State;
 use App\Repositories\AirportRepository;
+use App\VO\Airport;
 
 final readonly class DepNavigationHandler extends Add
 {
@@ -14,11 +15,12 @@ final readonly class DepNavigationHandler extends Add
     private const NEXT = State::SelectArr->value;
     private AirportRepository $repository;
     private int $start;
-    private int $end;
+    private int $limit;
 
     public function __construct(DtoContract $dto)
     {
         $this->repository = new AirportRepository();
+        $this->limit = 5;
         parent::__construct($dto);
     }
 
@@ -31,7 +33,7 @@ final readonly class DepNavigationHandler extends Add
 
     public function process(): void
     {
-        $airports = $this->repository->getAll();
+        $airports = $this->repository->getAll($this->start, $this->limit);
 
         $this->telegram->send(
             $this->method,
@@ -44,7 +46,6 @@ final readonly class DepNavigationHandler extends Add
         $data = $dto->data === self::SELF_ANALOG ? self::SELF . ':>:0' : $dto->data;
         [, $sign, $index] = explode(':', $data);
         $this->start = (int) ($sign === '>' ? $index : ($index - 5));
-        $this->end = $this->start + 5;
     }
 
     private function getMessageData(array $airports): array
@@ -63,10 +64,13 @@ final readonly class DepNavigationHandler extends Add
         ];
     }
 
+    /**
+     * @param Airport[] $airports
+     * @return array
+     */
     private function getAirportButtons(array $airports): array
     {
         $buttons = [];
-        $airports = array_slice($airports, max(0, $this->start), $this->end - $this->start);
         foreach ($airports as $airport) {
             $buttons[] = [
                 [
@@ -87,10 +91,11 @@ final readonly class DepNavigationHandler extends Add
                 'callback_data' => self::SELF . ":<:$this->start",
             ];
         }
-        if ($this->end < $airportsCount) {
+        $end = $this->start + $this->limit;
+        if ($end < $airportsCount) {
             $buttons[] = [
                 'text'          => '->',
-                'callback_data' => self::SELF . ":>:$this->end",
+                'callback_data' => self::SELF . ":>:$end",
             ];
         }
         return $buttons;
