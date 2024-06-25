@@ -40,16 +40,20 @@ final readonly class SuccessHandler extends Add
     public function process(): void
     {
         $airports = $this->airportRepository->getByCode([$this->dep, $this->arr]);
-        $depAirport = $this->getAirportByCode($this->dep, $airports);
-        $arrAirport = $this->getAirportByCode($this->arr, $airports);
-        $data = $this->getMessageData($depAirport, $arrAirport);
+        $dep = $this->getAirportByCode($this->dep, $airports);
+        $arr = $this->getAirportByCode($this->arr, $airports);
 
-        $this->telegram->send($this->method, $data);
+        $this->telegram->send(
+            $this->method,
+            $data = $this->getMessageData($dep, $arr),
+        );
 
         $subscriptionId = $this->createSubscription();
-        $prices = $this->createPrices($subscriptionId);
-        if ($prices) {
-            $this->sendPriceToMessage($prices, $data['text']);
+        $prices = $this->getPrices($subscriptionId);
+        $this->subscriptionsRepository->createPrices($prices);
+        $minPrice = $this->getMinPrice($prices);
+        if ($minPrice) {
+            $this->sendPriceToMessage($minPrice, $data['text']);
         }
     }
 
@@ -68,17 +72,12 @@ final readonly class SuccessHandler extends Add
         $this->date = "$this->year-$this->month-$this->day";
     }
 
-    private function formatNum(string $num): string
-    {
-        return (int) $num < 10 ? '0' . (int) $num : $num;
-    }
-
-    private function getMessageData(Airport $depAirport, Airport $arrAirport): array
+    private function getMessageData(Airport $dep, Airport $arr): array
     {
         $text = <<<TEXT
         Мониторинг успешно активирован!
-        Город отправления $depAirport->title ($depAirport->code)
-        Город прибытия $arrAirport->title ($arrAirport->code)
+        Город отправления $dep->title ($dep->code)
+        Город прибытия $arr->title ($arr->code)
         Дата вылета $this->day.$this->month.$this->year
         TEXT;
 
@@ -102,21 +101,24 @@ final readonly class SuccessHandler extends Add
         );
     }
 
-    private function createPrices(int $subscriptionId): array
+    private function getPrices(int $subscriptionId): array
     {
         $dt = DateTime::createFromFormat('Y-m-d', $this->date);
-        $prices = (new GetPriceService())->run($subscriptionId, $this->dep, $this->arr, $dt);
-        $this->subscriptionsRepository->createPrices($prices);
-        return array_filter($prices, fn (Price $price) => $price->price !== null);
+        return (new GetPriceService())->run($subscriptionId, $this->dep, $this->arr, $dt);
     }
 
-    private function sendPriceToMessage(array $prices, string $text): void
+    private function getMinPrice(array $prices): ?float
     {
-        $min = min(array_column($prices, 'price'));
+        $prices = array_filter($prices, fn (Price $price) => $price->price !== null);
+        return $prices ? min(array_column($prices, 'price')) : null;
+    }
+
+    private function sendPriceToMessage(float $minPrice, string $text): void
+    {
         $this->telegram->send($this->method, [
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
-            'text'       => $text . "\nЦена {$min}р",
+            'text'       => $text . "\nЦена {$minPrice}р",
         ]);
     }
 

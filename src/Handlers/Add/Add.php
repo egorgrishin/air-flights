@@ -8,6 +8,11 @@ use App\Handlers\Handler;
 
 abstract readonly class Add extends Handler
 {
+    protected function formatNum(string $num): string
+    {
+        return (int) $num < 10 ? '0' . (int) $num : $num;
+    }
+
     protected function getMenuButtons(): array
     {
         $prevData = $this->getPrevCbData();

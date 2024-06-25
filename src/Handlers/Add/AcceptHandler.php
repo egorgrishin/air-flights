@@ -13,11 +13,18 @@ final readonly class AcceptHandler extends Add
     private const PREV = State::SelectDay->value;
     private const SELF = State::AcceptMonitoring->value;
     private const NEXT = State::SuccessMonitoring->value;
+    private AirportRepository $repository;
     private string $dep;
     private string $arr;
     private string $month;
     private string $year;
     private string $day;
+
+    public function __construct(DtoContract $dto)
+    {
+        $this->repository = new AirportRepository();
+        parent::__construct($dto);
+    }
 
     public static function validate(DtoContract $dto): bool
     {
@@ -27,12 +34,14 @@ final readonly class AcceptHandler extends Add
 
     public function process(): void
     {
-        $airports = (new AirportRepository())->getByCode([$this->dep, $this->arr]);
+        $airports = $this->repository->getByCode([$this->dep, $this->arr]);
         $dep = $this->getAirportByCode($this->dep, $airports);
         $arr = $this->getAirportByCode($this->arr, $airports);
-        $data = $this->getMessageData($dep, $arr);
 
-        $this->telegram->send($this->method, $data);
+        $this->telegram->send(
+            $this->method,
+            $this->getMessageData($dep, $arr),
+        );
     }
 
     protected function parseDto(DtoContract $dto): void
@@ -47,11 +56,6 @@ final readonly class AcceptHandler extends Add
         ] = explode(':', $dto->data);
         $this->month = $this->formatNum($month);
         $this->day = $this->formatNum($day);
-    }
-
-    private function formatNum(string $num): string
-    {
-        return (int) $num < 10 ? '0' . (int) $num : $num;
     }
 
     private function getMessageData(Airport $dep, Airport $arr): array

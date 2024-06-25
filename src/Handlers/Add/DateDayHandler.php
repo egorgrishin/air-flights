@@ -56,11 +56,6 @@ final readonly class DateDayHandler extends Add
         $this->month = $this->formatNum($month);
     }
 
-    private function formatNum(string $num): string
-    {
-        return (int) $num < 10 ? '0' . (int) $num : $num;
-    }
-
     private function getButtons(): array
     {
         $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
