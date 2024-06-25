@@ -28,9 +28,9 @@ final readonly class AcceptHandler extends Add
     public function process(): void
     {
         $airports = (new AirportRepository())->getByCode([$this->dep, $this->arr]);
-        $depAirport = $this->getAirportByCode($this->dep, $airports);
-        $arrAirport = $this->getAirportByCode($this->arr, $airports);
-        $data = $this->getMessageData($depAirport, $arrAirport);
+        $dep = $this->getAirportByCode($this->dep, $airports);
+        $arr = $this->getAirportByCode($this->arr, $airports);
+        $data = $this->getMessageData($dep, $arr);
 
         $this->telegram->send($this->method, $data);
     }
@@ -54,11 +54,11 @@ final readonly class AcceptHandler extends Add
         return (int) $num < 10 ? '0' . (int) $num : $num;
     }
 
-    private function getMessageData(Airport $depAirport, Airport $arrAirport): array
+    private function getMessageData(Airport $dep, Airport $arr): array
     {
         $text = <<<TEXT
-        Город отправления $depAirport->title ($depAirport->code)
-        Город прибытия $arrAirport->title ($arrAirport->code)
+        Город отправления $dep->title ($dep->code)
+        Город прибытия $arr->title ($arr->code)
         Дата вылета $this->day.$this->month.$this->year
         TEXT;
 
@@ -77,9 +77,8 @@ final readonly class AcceptHandler extends Add
 
     private function getAirportByCode(string $code, array $airports): Airport
     {
-        return array_values(
-                   array_filter($airports, fn (Airport $airport) => $airport->code === $code)
-               )[0];
+        $airports = array_filter($airports, fn (Airport $airport) => $airport->code === $code);
+        return array_values($airports)[0];
     }
 
     private function getSuccessButton(): array

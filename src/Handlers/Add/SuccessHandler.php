@@ -91,9 +91,8 @@ final readonly class SuccessHandler extends Add
 
     private function getAirportByCode(string $code, array $airports): Airport
     {
-        return array_values(
-                   array_filter($airports, fn (Airport $airport) => $airport->code === $code)
-               )[0];
+        $airports = array_filter($airports, fn (Airport $airport) => $airport->code === $code);
+        return array_values($airports)[0];
     }
 
     private function createSubscription(): int
