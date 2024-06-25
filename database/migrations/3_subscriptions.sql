@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS subscriptions
     created_at DATETIME        NOT NULL DEFAULT NOW(),
 
     PRIMARY KEY (id),
-    FOREIGN KEY (dep_code) REFERENCES airports (code),
-    FOREIGN KEY (arr_code) REFERENCES airports (code),
+    FOREIGN KEY (dep_code) REFERENCES airports (code) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (arr_code) REFERENCES airports (code) ON DELETE CASCADE ON UPDATE CASCADE,
     INDEX (chat_id),
     INDEX (is_active),
     INDEX (date)
