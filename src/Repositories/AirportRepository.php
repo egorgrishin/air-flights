@@ -26,6 +26,7 @@ final class AirportRepository
         $stmt = Container::pdo()->prepare($sql);
         $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
         $stmt->setFetchMode(
             PDO::FETCH_FUNC,
             function (string $code, string $cityCode, ?int $sort, string $title) {
