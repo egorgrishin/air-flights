@@ -21,6 +21,7 @@ final class Telegram
     public function send(TelegramMethod $method, array $data): void
     {
         try {
+            Container::logger()->debug(json_encode($data, JSON_PRETTY_PRINT));
             $this->client->post($method->value, [
                 'headers' => [
                     'Accept'       => 'application/json',
@@ -29,7 +30,7 @@ final class Telegram
                 'json'    => $data,
             ]);
         } catch (GuzzleException $exception) {
-            Container::logger()->error($exception);
+            Container::logger()->error($exception->getResponse());
         }
     }
 
