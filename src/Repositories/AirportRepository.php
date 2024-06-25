@@ -12,13 +12,16 @@ final class AirportRepository
     /**
      * @param int $offset
      * @param int $limit
+     * @param string|null $excluded
      * @return Airport[]
      */
-    public function getAll(int $offset, int $limit): array
+    public function getAll(int $offset, int $limit, ?string $excluded = null): array
     {
+        $condition = $excluded ? 'WHERE code NOT LIKE :excluded' : '';
         $sql = <<<SQL
         SELECT code, city_code, sort, title
         FROM airports
+        $condition
         ORDER BY sort IS NULL, sort, title
         LIMIT :offset, :limit
         SQL;
@@ -26,6 +29,9 @@ final class AirportRepository
         $stmt = Container::pdo()->prepare($sql);
         $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        if ($excluded) {
+            $stmt->bindParam(':excluded', $excluded);
+        }
         $stmt->execute();
         return $stmt->fetchAll(
             PDO::FETCH_FUNC,
@@ -35,11 +41,15 @@ final class AirportRepository
         );
     }
 
-    public function getCount(): int
+    public function getCount(?string $excluded = null): int
     {
-        return Container::pdo()
-            ->query("SELECT COUNT(*) FROM airports")
-            ->fetchColumn();
+        $condition = $excluded ? 'WHERE code NOT LIKE :excluded' : '';
+        $stmt = Container::pdo()->prepare("SELECT COUNT(*) FROM airports $condition");
+        if ($excluded) {
+            $stmt->bindParam(':excluded', $excluded);
+        }
+        $stmt->execute();
+        return $stmt->fetchColumn();
     }
 
     public function getByCode(array $codes): array

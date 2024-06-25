@@ -6,7 +6,6 @@ namespace App\Handlers\Add;
 use App\Contracts\DtoContract;
 use App\Enums\State;
 use App\Repositories\AirportRepository;
-use App\VO\Airport;
 
 final readonly class ArrNavigationHandler extends Add
 {
@@ -16,23 +15,25 @@ final readonly class ArrNavigationHandler extends Add
     private AirportRepository $repository;
     private string $dep;
     private int $start;
-    private int $end;
+    private int $limit;
 
     public function __construct(DtoContract $dto)
     {
         $this->repository = new AirportRepository();
+        $this->limit = 5;
         parent::__construct($dto);
     }
 
     public static function validate(DtoContract $dto): bool
     {
         $state = self::SELF;
-        return preg_match("/^$state:[A-Z]{3}:[<>]:\d+$/", $dto->data) === 1;
+        return preg_match("/^$state:[A-Z]{3}:\d+$/", $dto->data) === 1;
     }
 
     public function process(): void
     {
-        $airports = $this->getAirports();
+        $airports = $this->repository->getAll($this->start, $this->limit, $this->dep);
+        $airportsCount = $this->repository->getCount($this->dep);
 
         $this->telegram->send($this->method, [
             'chat_id'      => $this->fromId,
@@ -41,7 +42,7 @@ final readonly class ArrNavigationHandler extends Add
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getAirportButtons($airports),
-                    $this->getNavigationButtons(count($airports)),
+                    $this->getNavigationButtons($airportsCount),
                     $this->getMenuButtons(),
                 ],
             ],
@@ -50,22 +51,13 @@ final readonly class ArrNavigationHandler extends Add
 
     protected function parseDto(DtoContract $dto): void
     {
-        [, $this->dep, $sign, $index] = explode(':', $dto->data);
-        $this->start = (int) ($sign === '>' ? $index : ($index - 5));
-        $this->end = $this->start + 5;
-    }
-
-    private function getAirports(): array
-    {
-        $airports = $this->repository->getAll();
-        $airports = array_filter($airports, fn (Airport $airport) => $airport->code !== $this->dep);
-        return array_values($airports);
+        [, $this->dep, $start] = explode(':', $dto->data);
+        $this->start = (int) $start;
     }
 
     private function getAirportButtons(array $airports): array
     {
         $buttons = [];
-        $airports = array_slice($airports, max(0, $this->start), $this->end - $this->start);
         foreach ($airports as $airport) {
             $buttons[] = [
                 [
@@ -81,15 +73,17 @@ final readonly class ArrNavigationHandler extends Add
     {
         $navButtons = [];
         if ($this->start > 0) {
+            $newStart = max(0, $this->start - $this->limit);
             $navButtons[] = [
                 'text'          => '<-',
-                'callback_data' => self::SELF . ":$this->dep:<:$this->start",
+                'callback_data' => self::SELF . ":$this->dep:$newStart",
             ];
         }
-        if ($this->end < $airportsCount) {
+        $end = $this->start + $this->limit;
+        if ($end < $airportsCount) {
             $navButtons[] = [
                 'text'          => '->',
-                'callback_data' => self::SELF . ":$this->dep:>:$this->end",
+                'callback_data' => self::SELF . ":$this->dep:$end",
             ];
         }
         return $navButtons;
@@ -97,6 +91,6 @@ final readonly class ArrNavigationHandler extends Add
 
     protected function getPrevCbData(): ?string
     {
-        return self::PREV . ":>:0";
+        return self::PREV . ":0";
     }
 }
