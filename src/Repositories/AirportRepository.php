@@ -19,7 +19,7 @@ final class AirportRepository
         $sql = <<<SQL
         SELECT code, city_code, sort, title
         FROM airports
-        ORDER BY sort IS NULL, sort
+        ORDER BY sort IS NULL, sort, title
         LIMIT :offset, :limit
         SQL;
 
