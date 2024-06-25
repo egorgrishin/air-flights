@@ -65,80 +65,71 @@ final readonly class DateDayHandler extends Add
     {
         $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
         $buttons = [
-            [
-                [
-                    'text'          => 'Пн',
-                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                ],
-                [
-                    'text'          => 'Вт',
-                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                ],
-                [
-                    'text'          => 'Ср',
-                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                ],
-                [
-                    'text'          => 'Чт',
-                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                ],
-                [
-                    'text'          => 'Пт',
-                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                ],
-                [
-                    'text'          => 'Сб',
-                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                ],
-                [
-                    'text'          => 'Вс',
-                    'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                ],
-            ],
+            $this->getCalendarHeader(),
         ];
+
         $tomorrow = new DateTime('tomorrow');
         $weekNum = 1;
-
         for ($i = 0; $i < $daysCount; $i++) {
             $day = $i + 1;
-            $dt = DateTime::createFromFormat('Y-n-j H:i', "$this->year-$this->month-$day 00:00");
+            $dt = DateTime::createFromFormat('Y-m-j H:i', "$this->year-$this->month-$day 00:00");
             $dayNum = (int) $dt->format('N');
-
             if (empty($buttons[$weekNum])) {
                 $buttons[$weekNum] = [];
             }
+
+            // Ставим кресты на днях из прошлого месяца
             if ($i === 0 && $weekNum === 1) {
-                for ($j = 1; $j < $dayNum; $j++) {
-                    $buttons[$weekNum][] = [
-                        'text'          => '❌',
-                        'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                    ];
-                }
+                $this->addButtons(1, $dayNum, $weekNum, $buttons);
             }
 
-            $cb = self::NEXT . ":$this->dep:$this->arr:$this->month:$this->year:$day";
-            if ($dt <= $tomorrow) {
-                $day = '❌';
-                $cb = self::SELF . ":$this->dep:$this->arr:$this->month:$this->year";
-            }
-            $buttons[$weekNum][] = [
-                'text'          => $day,
-                'callback_data' => $cb,
-            ];
+            $buttons[$weekNum][] = $this->getDayData($dt, $tomorrow, $day);
+
+            // Если это последний день месяца, то ставим кресты на днях следующего месяца
             if ($i === $daysCount - 1) {
-                for ($j = $dayNum + 1; $j <= 7; $j++) {
-                    $buttons[$weekNum][] = [
-                        'text'          => '❌',
-                        'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
-                    ];
-                }
+                $this->addButtons($dayNum + 1, 8, $weekNum, $buttons);
             }
+
             if ($dayNum === 7) {
                 $weekNum++;
             }
         }
 
         return $buttons;
+    }
+
+    private function getCalendarHeader(): array
+    {
+        $days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        $buttons = [];
+        foreach ($days as $day) {
+            $buttons[] = [
+                'text'          => $day,
+                'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
+            ];
+        }
+        return $buttons;
+    }
+
+    private function addButtons(int $start, int $end, int $weekNum, array &$buttons): void
+    {
+        for ($j = $start; $end; $j++) {
+            $buttons[$weekNum][] = [
+                'text'          => '❌',
+                'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
+            ];
+        }
+    }
+
+    private function getDayData(DateTime $dt, DateTime $tomorrow, int $day): array
+    {
+        return $dt <= $tomorrow ? [
+            'text'          => '❌',
+            'callback_data' => self::SELF . ":$this->dep:$this->arr:$this->month:$this->year",
+        ] : [
+            'text'          => $day,
+            'callback_data' => self::NEXT . ":$this->dep:$this->arr:$this->month:$this->year:$day",
+        ];
     }
 
     protected function getPrevCbData(): ?string
