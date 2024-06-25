@@ -5,6 +5,8 @@ namespace App\VO;
 
 final readonly class Company
 {
-    public int $id;
-    public string $title;
+    public function __construct(
+        public string $code,
+        public string $title,
+    ) {}
 }

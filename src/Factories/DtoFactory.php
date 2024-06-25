@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App;
+namespace App\Factories;
 
 use App\Contracts\DtoContract;
 use App\Dto\CallbackDto;

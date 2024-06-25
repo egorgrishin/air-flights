@@ -33,8 +33,8 @@ final readonly class DepNavigationHandler extends Add
 
     public function process(): void
     {
-        $airports = $this->repository->getAll($this->offset, $this->limit);
-        $airportsCount = $this->repository->getCount();
+        $airports = $this->repository->get($this->offset, $this->limit);
+        $airportsCount = $this->repository->count();
 
         $this->telegram->send(
             $this->method,

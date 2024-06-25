@@ -32,8 +32,8 @@ final readonly class ArrNavigationHandler extends Add
 
     public function process(): void
     {
-        $airports = $this->repository->getAll($this->offset, $this->limit, $this->dep);
-        $airportsCount = $this->repository->getCount($this->dep);
+        $airports = $this->repository->get($this->offset, $this->limit, $this->dep);
+        $airportsCount = $this->repository->count($this->dep);
 
         $this->telegram->send($this->method, [
             'chat_id'      => $this->fromId,

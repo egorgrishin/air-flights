@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Core\Telegram;
 use App\Enums\TelegramMethod;
+use App\Repositories\PriceRepository;
 use App\Repositories\SubscriptionsRepository;
 use App\Services\GetPriceService;
 use App\VO\Price;
@@ -11,29 +12,32 @@ use App\VO\Subscription;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$temp = [];
-$repository = new SubscriptionsRepository();
-$subscriptions = $repository->getAll();
-$subscriptionIds = array_column($subscriptions, 'id');
-$prices = $repository->getAllPrices($subscriptionIds);
+/**
+ * Возвращает цены на авиабилеты из базы данных, сгруппированные по подпискам
+ *
+ * @param Subscription[] $subscriptions
+ * @return Price[][]
+ */
+function getOldPrices(array $subscriptions): array
+{
+    global $priceRepository;
+    $subscriptionIds = array_column($subscriptions, 'id');
+    $prices = $subscriptionIds ? $priceRepository->get($subscriptionIds) : [];
+    $data = array_fill_keys($subscriptionIds, []);
 
-$data = array_fill_keys($subscriptionIds, []);
-foreach ($prices as $price) {
-    if (!array_key_exists($price->subscriptionId, $data)) {
-        continue;
+    foreach ($prices as $price) {
+        if (!array_key_exists($price->subscriptionId, $data)) {
+            continue;
+        }
+        $data[$price->subscriptionId][$price->companyCode] = $price;
     }
-    $data[$price->subscriptionId][$price->companyCode] = $price;
-}
 
-/** @var Subscription $subscription */
-foreach ($subscriptions as $subscription) {
-    $prices = getPrices($subscription);
-    checkPrices($subscription, $prices, $data[$subscription->id]);
-    savePrices($prices, $data[$subscription->id]);
+    return $data;
 }
 
 /**
  * Возвращает массив цен на билеты, кэшируя результаты запроса на время жизни скрипта
+ * 
  * @param Subscription $subscription
  * @return array
  */
@@ -110,10 +114,22 @@ function checkPrices(Subscription $subscription, array $prices, array $oldPrices
  */
 function savePrices(array $prices, array $oldPrices): void
 {
-    global $repository;
+    global $priceRepository;
     foreach ($prices as $price) {
         empty($oldPrices[$price->companyCode])
-            ? $repository->createPrices([$price])
-            : $repository->updatePrice($price);
+            ? $priceRepository->createPrices([$price])
+            : $priceRepository->updatePrice($price);
     }
+}
+
+$temp = [];
+$subsRepository = new SubscriptionsRepository();
+$priceRepository = new PriceRepository();
+$subscriptions = $subsRepository->get();
+$oldPrices = getOldPrices($subscriptions);
+
+foreach ($subscriptions as $subscription) {
+    $prices = getPrices($subscription);
+    checkPrices($subscription, $prices, $oldPrices[$subscription->id]);
+    savePrices($prices, $oldPrices[$subscription->id]);
 }

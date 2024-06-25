@@ -33,18 +33,4 @@ final readonly class Subscription
         $this->createdAt = $createdAt;
         $this->minPrice = $minPrice;
     }
-
-    public static function fromPdoAll(): callable
-    {
-        return function ($id, $chatId, $dep, $arr, $date): Subscription {
-            return new self($chatId, $dep, $arr, $date, $id);
-        };
-    }
-
-    public static function fromPdoByChat(): callable
-    {
-        return function (int $id, string $chatId, string $dep, string $arr, string $date, ?float $minPrice): Subscription {
-            return new self($chatId, $dep, $arr, $date, $id, minPrice: $minPrice);
-        };
-    }
 }

@@ -6,10 +6,12 @@ namespace App\Handlers\Add;
 use App\Contracts\DtoContract;
 use App\Enums\State;
 use App\Repositories\AirportRepository;
+use App\Repositories\PriceRepository;
 use App\Repositories\SubscriptionsRepository;
 use App\Services\GetPriceService;
 use App\VO\Airport;
 use App\VO\Price;
+use App\VO\Subscription;
 use DateTime;
 
 final readonly class SuccessHandler extends Add
@@ -17,6 +19,7 @@ final readonly class SuccessHandler extends Add
     private const SELF = State::SuccessMonitoring->value;
     private AirportRepository $airportRepository;
     private SubscriptionsRepository $subscriptionsRepository;
+    private PriceRepository $priceRepository;
     private string $dep;
     private string $arr;
     private string $month;
@@ -28,6 +31,7 @@ final readonly class SuccessHandler extends Add
     {
         $this->airportRepository = new AirportRepository();
         $this->subscriptionsRepository = new SubscriptionsRepository();
+        $this->priceRepository = new PriceRepository();
         parent::__construct($dto);
     }
 
@@ -50,7 +54,7 @@ final readonly class SuccessHandler extends Add
 
         $subscriptionId = $this->createSubscription();
         $prices = $this->getPrices($subscriptionId);
-        $this->subscriptionsRepository->createPrices($prices);
+        $this->priceRepository->createPrices($prices);
         $minPrice = $this->getMinPrice($prices);
         if ($minPrice) {
             $this->sendPriceToMessage($minPrice, $data['text']);
@@ -96,9 +100,13 @@ final readonly class SuccessHandler extends Add
 
     private function createSubscription(): int
     {
-        return $this->subscriptionsRepository->create(
-            (string) $this->fromId, $this->dep, $this->arr, $this->date
+        $subscription = new Subscription(
+            (string) $this->fromId,
+            $this->dep,
+            $this->arr,
+            $this->date,
         );
+        return $this->subscriptionsRepository->create($subscription);
     }
 
     private function getPrices(int $subscriptionId): array

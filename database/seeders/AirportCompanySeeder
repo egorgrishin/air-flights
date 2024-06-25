@@ -3,33 +3,30 @@
 declare(strict_types=1);
 
 use App\Core\Container;
+use App\Repositories\AirportRepository;
+use App\Repositories\CompanyRepository;
+use App\VO\Airport;
+use App\VO\Company;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-const COMPANIES = [
-    ['title' => 'Победа', 'code' => 'Pobeda', 'file' => 'pobeda.json'],
-    ['title' => 'Smartavia', 'code' => 'SmartAvia', 'file' => 'smartavia.json'],
-];
-
 function createCompany(array $company): void
 {
-    Container::pdo()
-        ->prepare('INSERT INTO companies (title, code) VALUES (?, ?)')
-        ->execute([$company['title'], $company['code']]);
+    global $companyRepository;
+    $company = new Company($company['code'], $company['title']);
+    $companyRepository->create($company);
 }
 
 function createAirport(array $airport): void
 {
-    Container::pdo()
-        ->prepare('INSERT INTO airports (code, city_code, sort, title) VALUES (:iataCode, :metropolitanCode, :sort, :name)')
-        ->execute($airport);
-}
-
-function attachCompanyToAirport(string $companyCode, string $airportCode): void
-{
-    Container::pdo()
-        ->prepare('INSERT INTO airport_company (airport_code, company_code) VALUES (?, ?)')
-        ->execute([$airportCode, $companyCode]);
+    global $airportRepository;
+    $airport = new Airport(
+        $airport['iataCode'],
+        $airport['metropolitanCode'],
+        $airport['sort'],
+        $airport['name'],
+    );
+    $airportRepository->create($airport);
 }
 
 function getAirports(string $file): array
@@ -39,6 +36,13 @@ function getAirports(string $file): array
         true
     );
 }
+
+$airportRepository = new AirportRepository();
+$companyRepository = new CompanyRepository();
+const COMPANIES = [
+    ['title' => 'Победа', 'code' => 'Pobeda', 'file' => 'pobeda.json'],
+    ['title' => 'Smartavia', 'code' => 'SmartAvia', 'file' => 'smartavia.json'],
+];
 
 $pdo = Container::pdo();
 $pdo->beginTransaction();
@@ -51,7 +55,7 @@ foreach (COMPANIES as $company) {
             createAirport($airport);
             $airports[$airport['iataCode']] = true;
         }
-        attachCompanyToAirport($company['code'], $airport['iataCode']);
+        $companyRepository->attachToAirport($airport['iataCode'], $company['code']);
     }
 }
 $pdo->commit();
