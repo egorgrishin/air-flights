@@ -84,14 +84,14 @@ final readonly class ArrNavigationHandler extends Add
         if ($this->offset > 0) {
             $newStart = max(0, $this->offset - $this->limit);
             $navButtons[] = [
-                'text'          => '<-',
+                'text'          => '⬅️',
                 'callback_data' => self::SELF . ":$this->dep:$newStart",
             ];
         }
         $end = $this->offset + $this->limit;
         if ($end < $airportsCount) {
             $navButtons[] = [
-                'text'          => '->',
+                'text'          => '➡️',
                 'callback_data' => self::SELF . ":$this->dep:$end",
             ];
         }

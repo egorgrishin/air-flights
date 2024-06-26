@@ -98,14 +98,14 @@ final readonly class DepNavigationHandler extends Add
         if ($this->offset > 0) {
             $newStart = max(0, $this->offset - $this->limit);
             $buttons[] = [
-                'text'          => '<-',
+                'text'          => '⬅️',
                 'callback_data' => self::SELF . ":$newStart",
             ];
         }
         $end = $this->offset + $this->limit;
         if ($end < $airportsCount) {
             $buttons[] = [
-                'text'          => '->',
+                'text'          => '➡️',
                 'callback_data' => self::SELF . ":$end",
             ];
         }

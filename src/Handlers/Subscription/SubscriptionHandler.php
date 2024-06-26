@@ -111,14 +111,14 @@ final readonly class SubscriptionHandler extends Handler
         if ($this->offset > 0) {
             $newStart = max(0, $this->offset - $this->limit);
             $buttons[] = [
-                'text'          => '<-',
+                'text'          => '⬅️',
                 'callback_data' => "$this->selfState:$newStart",
             ];
         }
         $end = $this->offset + $this->limit;
         if ($end < $subsCount) {
             $buttons[] = [
-                'text'          => '->',
+                'text'          => '➡️',
                 'callback_data' => "$this->selfState:$end",
             ];
         }
