@@ -88,10 +88,10 @@ final readonly class SuccessHandler extends Add
     private function getMessageData(Airport $dep, Airport $arr): array
     {
         $text = <<<TEXT
-            Подписка успешно активирована!
-            ● Город отправления: $dep->title ($dep->code)
-            ● Город прибытия: $arr->title ($arr->code)
-            Дата вылета:  $this->day.$this->month.$this->year
+        Подписка успешно активирована!
+        🛫 Город отправления: $dep->title ($dep->code)
+        🛬 Город прибытия: $arr->title ($arr->code)
+        Дата вылета:  $this->day.$this->month.$this->year
         TEXT;
 
         return [
