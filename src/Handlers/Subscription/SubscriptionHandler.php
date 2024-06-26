@@ -97,7 +97,7 @@ final readonly class SubscriptionHandler extends Handler
             $date = DateTime::createFromFormat('Y-m-d', $sub->date)->format('d.m.Y');
             $buttons[] = [
                 [
-                    'text'          => "$date Санкт-Петербург — Челябинск {$sub->minPrice}р.",
+                    'text'          => "$date Санкт-Петербург — Челябинскк {$sub->minPrice}р.",
                     'callback_data' => "$this->selfState:$this->offset:$sub->id",
                 ],
             ];
