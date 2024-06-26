@@ -67,10 +67,15 @@ final readonly class SubscriptionHandler extends Handler
 
     private function getMessageData(array $subs, int $subsCount): array
     {
+        $text = <<<TEXT
+        ✅️ Активные подписки: 
+        ❗️ Если хочешь удалить одну из подписок, просто нажми на неё и она исчезнет
+        TEXT;
+
         return [
             'chat_id'      => $this->fromId,
             'message_id'   => $this->messageId,
-            'text'         => "Список подписок\nДля удаления нажмите",
+            'text'         => $text,
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getSubsButtons($subs),
