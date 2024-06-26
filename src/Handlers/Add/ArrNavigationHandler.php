@@ -24,12 +24,18 @@ final readonly class ArrNavigationHandler extends Add
         parent::__construct($dto);
     }
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         $state = self::SELF;
         return preg_match("/^$state:[A-Z]{3}:\d+$/", $dto->data) === 1;
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         $airports = $this->repository->get($this->offset, $this->limit, $this->dep);
@@ -49,6 +55,9 @@ final readonly class ArrNavigationHandler extends Add
         ]);
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
         [, $this->dep, $offset] = explode(':', $dto->data);
@@ -89,6 +98,9 @@ final readonly class ArrNavigationHandler extends Add
         return $navButtons;
     }
 
+    /**
+     * Возвращает callback-data для кнопки "Назад"
+     */
     protected function getPrevCbData(): ?string
     {
         return self::PREV . ":0";

@@ -22,12 +22,18 @@ final readonly class DateDayHandler extends Add
         parent::__construct($dto);
     }
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         $state = self::SELF;
         return preg_match("/^$state:[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}$/", $dto->data) === 1;
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         $this->telegram->send($this->method, [
@@ -43,6 +49,9 @@ final readonly class DateDayHandler extends Add
         ]);
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
         $data = explode(':', $dto->data);
@@ -127,6 +136,9 @@ final readonly class DateDayHandler extends Add
         ];
     }
 
+    /**
+     * Возвращает callback-data для кнопки "Назад"
+     */
     protected function getPrevCbData(): ?string
     {
         return self::PREV . ":$this->dep:$this->arr";

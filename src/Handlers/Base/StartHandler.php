@@ -9,17 +9,23 @@ use App\Handlers\Handler;
 
 final readonly class StartHandler extends Handler
 {
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         return $dto->data === '/start';
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         $text = <<<TEXT
-        Привет!
-        Я - бот Air Flights и я занимаюсь мониторингом цен на авиабилеты!
-        Выберите команду из меню
+            Привет, путешественник! Я бот Air Flights✈️
+            Я занимаюсь отслеживанием цен на авиабилеты!
+            Приступим?) Для того, чтобы начать нажми "Start 🚀"
         TEXT;
 
         $this->telegram->send($this->method, [
@@ -36,6 +42,9 @@ final readonly class StartHandler extends Handler
         ]);
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
     }

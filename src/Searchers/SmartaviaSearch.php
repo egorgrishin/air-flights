@@ -4,7 +4,8 @@ declare(strict_types=1);
 namespace App\Searchers;
 
 use App\Contracts\SearcherContract;
-use App\Exceptions\SearcherError;
+use App\Exceptions\SearcherParseError;
+use App\Exceptions\SearcherResponseError;
 use DateTime;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -25,8 +26,7 @@ class SmartaviaSearch implements SearcherContract
 
     /**
      * Возвращает цену на авиабилет с указанными параметрами
-     * @throws GuzzleException
-     * @throws SearcherError
+     * @throws GuzzleException|SearcherParseError|SearcherResponseError
      */
     public function getPrice(string $dep, string $arr, DateTime $dt): ?float
     {
@@ -59,12 +59,12 @@ class SmartaviaSearch implements SearcherContract
 
     /**
      * Возвращает тело ответа в виде ассоциативного массива
-     * @throws SearcherError
+     * @throws SearcherResponseError
      */
     private function getResponseData(ResponseInterface $response): array
     {
         if ($response->getStatusCode() !== 200) {
-            throw new SearcherError('Error Smartavia');
+            throw new SearcherResponseError('Error Smartavia response');
         }
 
         $body = $response->getBody()->getContents();
@@ -73,37 +73,37 @@ class SmartaviaSearch implements SearcherContract
 
     /**
      * Возвращает цену из данных, вернувшихся из API
-     * @throws SearcherError
+     * @throws SearcherParseError
      */
     private function parse(string $dep, string $arr, DateTime $dt, array $data): float
     {
         if (($data['status'] ?? '0') !== 'ok') {
-            throw new SearcherError("Error Smartavia: [status] is not equal [ok]");
+            throw new SearcherParseError("Error Smartavia: [status] is not equal [ok]");
         }
         if (empty($data['data'])) {
-            throw new SearcherError("Error Smartavia: [data] are empty");
+            throw new SearcherParseError("Error Smartavia: [data] are empty");
         }
 
         $data = $data['data'];
         $key = "$dep-$arr";
         if (empty($data[$key])) {
-            throw new SearcherError("Error Smartavia: [$key] are empty");
+            throw new SearcherParseError("Error Smartavia: [$key] are empty");
         }
 
         $data = $data[$key];
         $date = $dt->format('Y-m-d');
         if (empty($data[$date])) {
-            throw new SearcherError("Error Smartavia: [$date] are empty");
+            throw new SearcherParseError("Error Smartavia: [$date] are empty");
         }
 
         $data = $data[$date];
         if (empty($data['label'])) {
-            throw new SearcherError("Error Smartavia: [label] are empty");
+            throw new SearcherParseError("Error Smartavia: [label] are empty");
         }
 
         $data = $data['label'];
         if (empty($data['value'])) {
-            throw new SearcherError("Error Smartavia: [value] are empty");
+            throw new SearcherParseError("Error Smartavia: [value] are empty");
         }
 
         return (float) str_replace([' ', '₽'], '', $data['value']);

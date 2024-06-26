@@ -4,7 +4,8 @@ declare(strict_types=1);
 namespace App\Searchers;
 
 use App\Contracts\SearcherContract;
-use App\Exceptions\SearcherError;
+use App\Exceptions\SearcherParseError;
+use App\Exceptions\SearcherResponseError;
 use DateTime;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -25,8 +26,7 @@ class PobedaSearch implements SearcherContract
 
     /**
      * Возвращает цену на авиабилет с указанными параметрами
-     * @throws GuzzleException
-     * @throws SearcherError
+     * @throws GuzzleException|SearcherParseError|SearcherResponseError
      */
     public function getPrice(string $dep, string $arr, DateTime $dt): ?float
     {
@@ -60,14 +60,14 @@ class PobedaSearch implements SearcherContract
 
     /**
      * Возвращает тело ответа в виде ассоциативного массива
-     * @throws SearcherError
+     * @throws SearcherResponseError
      */
     private function getResponseData(ResponseInterface $response): array
     {
         $headers = $response->getHeaders();
         $contentType = $headers['content-type'] ?? $headers['Content-Type'];
         if ($response->getStatusCode() !== 200 || in_array('text/html', $contentType)) {
-            throw new SearcherError('Error Pobeda: status is not 200 or type is not json');
+            throw new SearcherResponseError('Error Pobeda response');
         }
 
         $body = $response->getBody()->getContents();
@@ -76,15 +76,15 @@ class PobedaSearch implements SearcherContract
 
     /**
      * Возвращает цену из данных, вернувшихся из API
-     * @throws SearcherError
+     * @throws SearcherParseError
      */
     private function parse(array $data): ?float
     {
         if (($data['result'] ?? '0') !== 'ok') {
-            throw new SearcherError("Error Pobeda: [result] is not equal [ok]");
+            throw new SearcherParseError("Error Pobeda: [result] is not equal [ok]");
         }
         if (empty($data['prices'])) {
-            throw new SearcherError("Error Pobeda: [prices] are empty");
+            throw new SearcherParseError("Error Pobeda: [prices] are empty");
         }
 
         // Индекс 0 - цены на билеты "туда". Индекс 1 - на билеты "обратно"

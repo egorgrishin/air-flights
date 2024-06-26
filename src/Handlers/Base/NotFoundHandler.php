@@ -15,11 +15,17 @@ final readonly class NotFoundHandler extends Handler
         parent::__construct($dto);
     }
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         return true;
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         $this->telegram->send($this->method, [
@@ -29,6 +35,9 @@ final readonly class NotFoundHandler extends Handler
         ]);
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
     }

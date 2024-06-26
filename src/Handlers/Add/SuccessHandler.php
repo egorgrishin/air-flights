@@ -35,12 +35,18 @@ final readonly class SuccessHandler extends Add
         parent::__construct($dto);
     }
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         $state = self::SELF;
         return preg_match("/^$state:[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}:\d{1,2}$/", $dto->data) === 1;
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         $airports = $this->airportRepository->getByCode([$this->dep, $this->arr]);
@@ -61,6 +67,9 @@ final readonly class SuccessHandler extends Add
         }
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
         [
@@ -79,10 +88,10 @@ final readonly class SuccessHandler extends Add
     private function getMessageData(Airport $dep, Airport $arr): array
     {
         $text = <<<TEXT
-        Мониторинг успешно активирован!
-        Город отправления $dep->title ($dep->code)
-        Город прибытия $arr->title ($arr->code)
-        Дата вылета $this->day.$this->month.$this->year
+            Подписка успешно активирована!
+            ● Город отправления: $dep->title ($dep->code)
+            ● Город прибытия: $arr->title ($arr->code)
+            Дата вылета:  $this->day.$this->month.$this->year
         TEXT;
 
         return [
@@ -130,6 +139,9 @@ final readonly class SuccessHandler extends Add
         ]);
     }
 
+    /**
+     * Возвращает callback-data для кнопки "Назад"
+     */
     protected function getPrevCbData(): ?string
     {
         return null;

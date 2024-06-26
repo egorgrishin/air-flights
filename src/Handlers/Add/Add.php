@@ -13,22 +13,28 @@ abstract readonly class Add extends Handler
         return (int) $num < 10 ? '0' . (int) $num : $num;
     }
 
+    /**
+     * Возвращает массив кнопок навигации
+     */
     protected function getMenuButtons(): array
     {
         $prevData = $this->getPrevCbData();
         return [
             ...(!$prevData ? [] : [
                 [
-                    'text'          => 'Назад',
+                    'text'          => 'Назад ⏪️',
                     'callback_data' => $prevData,
                 ],
             ]),
             [
-                'text'          => 'Отменить',
+                'text'          => 'Отменить ❌️',
                 'callback_data' => State::CancelMonitoring->value,
             ],
         ];
     }
 
+    /**
+     * Возвращает callback-data для кнопки "Назад"
+     */
     abstract protected function getPrevCbData(): ?string;
 }

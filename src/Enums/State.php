@@ -5,8 +5,8 @@ namespace App\Enums;
 
 enum State: string
 {
-    case StartSubscription = 'Новая подписка';
-    case SubscriptionsList = 'Список подписок';
+    case StartSubscription = 'Start 🚀';
+    case SubscriptionsList = 'Активные подписки';
     case SubsSelect = 'ss';
     case SelectDep = 'sda';
     case SelectArr = 'saa';

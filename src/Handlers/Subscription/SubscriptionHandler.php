@@ -26,6 +26,9 @@ final readonly class SubscriptionHandler extends Handler
         parent::__construct($dto);
     }
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         $state = State::SubsSelect->value;
@@ -33,6 +36,9 @@ final readonly class SubscriptionHandler extends Handler
             || preg_match("/^$state:\d+(:\d+)?$/", $dto->data) === 1;
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         if ($this->subsId) {
@@ -48,6 +54,9 @@ final readonly class SubscriptionHandler extends Handler
         );
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
         $data = $dto->data === State::SubscriptionsList->value ? "$this->selfState:0" : $dto->data;

@@ -5,7 +5,7 @@ namespace App\Exceptions;
 
 use Exception;
 
-class SearcherError extends Exception
+class SearcherParseError extends Exception
 {
     //
 }

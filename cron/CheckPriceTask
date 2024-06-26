@@ -76,6 +76,7 @@ function checkPrices(Subscription $subscription, array $prices, array $oldPrices
     $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
     $minPrice = min($prices);
     $telegram = new Telegram();
+    // Старые цены могут быть удалены, если новые цены не будут получены с API
     if (empty($oldPrices)) {
         $text = <<<TEXT
                 $date. $subscription->depCode-$subscription->arrCode

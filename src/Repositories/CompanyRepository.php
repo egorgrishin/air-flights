@@ -28,6 +28,7 @@ final class CompanyRepository
 
     /**
      * Прикрепляет компанию к аэропорту
+     *
      * @param string $airportCode
      * @param string $companyCode
      * @return void

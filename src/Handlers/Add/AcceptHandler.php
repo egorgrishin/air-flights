@@ -26,12 +26,18 @@ final readonly class AcceptHandler extends Add
         parent::__construct($dto);
     }
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         $state = self::SELF;
         return preg_match("/^$state:[A-Z]{3}:[A-Z]{3}:\d{1,2}:\d{4}:\d{1,2}$/", $dto->data) === 1;
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         $airports = $this->repository->getByCode([$this->dep, $this->arr]);
@@ -44,6 +50,9 @@ final readonly class AcceptHandler extends Add
         );
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
         [
@@ -58,12 +67,15 @@ final readonly class AcceptHandler extends Add
         $this->day = $this->formatNum($day);
     }
 
+    /**
+     * Возвращает данные для отправки в Telegram
+     */
     private function getMessageData(Airport $dep, Airport $arr): array
     {
         $text = <<<TEXT
-        Город отправления $dep->title ($dep->code)
-        Город прибытия $arr->title ($arr->code)
-        Дата вылета $this->day.$this->month.$this->year
+            ● Город отправления: $dep->title ($dep->code)
+            ● Город прибытия: $arr->title ($arr->code)
+            Дата вылета:  $this->day.$this->month.$this->year
         TEXT;
 
         return [
@@ -79,22 +91,35 @@ final readonly class AcceptHandler extends Add
         ];
     }
 
+    /**
+     * Возвращает аэропорт по его коду из массива аэропортов
+     *
+     * @param string $code
+     * @param Airport[] $airports
+     * @return Airport
+     */
     private function getAirportByCode(string $code, array $airports): Airport
     {
         $airports = array_filter($airports, fn (Airport $airport) => $airport->code === $code);
         return array_values($airports)[0];
     }
 
+    /**
+     * Возвращает данные для кнопки подтверждения
+     */
     private function getSuccessButton(): array
     {
         return [
             [
-                'text'          => 'Подтвердить',
+                'text'          => 'Подтвердить ✅️',
                 'callback_data' => self::NEXT . ":$this->dep:$this->arr:$this->month:$this->year:$this->day",
             ],
         ];
     }
 
+    /**
+     * Возвращает callback-data для кнопки "Назад"
+     */
     protected function getPrevCbData(): ?string
     {
         return self::PREV . ":$this->dep:$this->arr:$this->month:$this->year";

@@ -33,10 +33,19 @@ abstract readonly class Handler implements HandlerContract
         }
     }
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     abstract public static function validate(DtoContract $dto): bool;
 
+    /**
+     * Обработка запроса
+     */
     abstract public function process(): void;
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     abstract protected function parseDto(DtoContract $dto): void;
 
     /**

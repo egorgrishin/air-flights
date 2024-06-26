@@ -24,6 +24,9 @@ final readonly class DepNavigationHandler extends Add
         parent::__construct($dto);
     }
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         $state = self::SELF;
@@ -31,6 +34,9 @@ final readonly class DepNavigationHandler extends Add
             || preg_match("/^$state:\d+$/", $dto->data) === 1;
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         $airports = $this->repository->get($this->offset, $this->limit);
@@ -42,6 +48,9 @@ final readonly class DepNavigationHandler extends Add
         );
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
         $data = $dto->data === self::SELF_ANALOG ? self::SELF . ':0' : $dto->data;
@@ -103,6 +112,9 @@ final readonly class DepNavigationHandler extends Add
         return $buttons;
     }
 
+    /**
+     * Возвращает callback-data для кнопки "Назад"
+     */
     protected function getPrevCbData(): ?string
     {
         return null;

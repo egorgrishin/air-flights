@@ -29,12 +29,18 @@ final readonly class DateMonthHandler extends Add
     private string $dep;
     private string $arr;
 
+    /**
+     * Проверяет, должен ли обработчик обрабатывать запрос
+     */
     public static function validate(DtoContract $dto): bool
     {
         $state = self::SELF;
         return preg_match("/^$state:[A-Z]{3}:[A-Z]{3}$/", $dto->data) === 1;
     }
 
+    /**
+     * Обработка запроса
+     */
     public function process(): void
     {
         $this->telegram->send($this->method, [
@@ -50,6 +56,9 @@ final readonly class DateMonthHandler extends Add
         ]);
     }
 
+    /**
+     * Сохраняет данные из DTO в свойства обработчика
+     */
     protected function parseDto(DtoContract $dto): void
     {
         $data = explode(':', $dto->data);
@@ -76,6 +85,9 @@ final readonly class DateMonthHandler extends Add
         return $buttons;
     }
 
+    /**
+     * Возвращает callback-data для кнопки "Назад"
+     */
     protected function getPrevCbData(): ?string
     {
         return self::PREV . ":$this->dep:0";
