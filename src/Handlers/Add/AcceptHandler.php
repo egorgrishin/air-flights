@@ -75,7 +75,7 @@ final readonly class AcceptHandler extends Add
         $text = <<<TEXT
         🛫 Город отправления: $dep->title ($dep->code)
         🛬 Город прибытия: $arr->title ($arr->code)
-        Дата вылета:  $this->day.$this->month.$this->year
+        Дата вылета: $this->day.$this->month.$this->year
         TEXT;
 
         return [
