@@ -133,10 +133,16 @@ final readonly class SuccessHandler extends Add
 
     private function sendPriceToMessage(float $minPrice, string $text): void
     {
+        $text = <<<TEXT
+        $text
+        💰Текущая цена на рейс: $minPrice ₽
+        TEXT;
+
+
         $this->telegram->send($this->method, [
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
-            'text'       => $text . "\n💰Текущая цена на рейс: $minPrice ₽",
+            'text'       => $text,
         ]);
     }
 
