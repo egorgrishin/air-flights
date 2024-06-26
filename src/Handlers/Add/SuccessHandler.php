@@ -133,14 +133,19 @@ final readonly class SuccessHandler extends Add
 
     private function sendPriceToMessage(?float $minPrice, string $text): void
     {
-        $append = $minPrice
-            ? "💰Текущая цена на рейс: $minPrice ₽"
-            : "Упс!😬\nВ настоящее время цен на выбранный путь нет. Попробуйте поменять даты!";
+        if ($minPrice) {
+            $text .= "\n\n💰Текущая цена на рейс: $minPrice ₽";
+        } else {
+            $text = <<<TEXT
+            Упс! 😬
+            К сожалению, в настоящее время цен на выбранный маршрут нет. Попробуйте поменять дату. Если на эту дату появиться цена, вам придёт уведомление!
+            TEXT;
+        }
 
         $this->telegram->send($this->method, [
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
-            'text'       => $text . "\n\n" . $append,
+            'text'       => $text,
         ]);
     }
 
