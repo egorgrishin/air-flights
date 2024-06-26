@@ -61,10 +61,9 @@ final readonly class SuccessHandler extends Add
         $subscriptionId = $this->createSubscription();
         $prices = $this->getPrices($subscriptionId);
         $this->priceRepository->createPrices($prices);
+
         $minPrice = $this->getMinPrice($prices);
-        if ($minPrice) {
-            $this->sendPriceToMessage($minPrice, $data['text']);
-        }
+        $this->sendPriceToMessage($minPrice, $data['text']);
     }
 
     /**
@@ -131,18 +130,16 @@ final readonly class SuccessHandler extends Add
         return $prices ? min(array_column($prices, 'price')) : null;
     }
 
-    private function sendPriceToMessage(float $minPrice, string $text): void
+    private function sendPriceToMessage(?float $minPrice, string $text): void
     {
-        $text = <<<TEXT
-        $text
-        💰Текущая цена на рейс: $minPrice ₽
-        TEXT;
-
+        $append = $minPrice
+            ? "💰Текущая цена на рейс: $minPrice ₽"
+            : "Упс!😬\nВ настоящее время цен на выбранный путь нет. Попробуйте поменять даты!";
 
         $this->telegram->send($this->method, [
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
-            'text'       => $text,
+            'text'       => $text . "\n\n" . $append,
         ]);
     }
 
