@@ -35,6 +35,7 @@ final readonly class StartHandler extends Handler
                 'keyboard'          => [
                     [['text' => State::StartSubscription->value]],
                     [['text' => State::SubscriptionsList->value]],
+                    [['text' => State::Instruction->value]],
                 ],
                 'one_time_keyboard' => true,
                 'resize_keyboard'   => true,
