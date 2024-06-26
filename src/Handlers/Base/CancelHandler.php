@@ -5,6 +5,7 @@ namespace App\Handlers\Base;
 
 use App\Contracts\DtoContract;
 use App\Enums\State;
+use App\Enums\TelegramMethod;
 use App\Handlers\Handler;
 
 final readonly class CancelHandler extends Handler
@@ -22,10 +23,9 @@ final readonly class CancelHandler extends Handler
      */
     public function process(): void
     {
-        $this->telegram->send($this->method, [
+        $this->telegram->send(TelegramMethod::Delete, [
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
-            'text'       => 'Отменено',
         ]);
     }
 
