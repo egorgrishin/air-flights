@@ -136,7 +136,7 @@ final readonly class SuccessHandler extends Add
         $this->telegram->send($this->method, [
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
-            'text'       => $text . "\n💰Текущая цена на рейс: $minPrice&nbsp;₽",
+            'text'       => $text . "\n💰Текущая цена на рейс: $minPrice&#160;₽",
         ]);
     }
 
