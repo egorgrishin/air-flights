@@ -12,6 +12,7 @@ use App\Handlers\Add\DateMonthHandler;
 use App\Handlers\Add\DepNavigationHandler;
 use App\Handlers\Add\SuccessHandler;
 use App\Handlers\Base\CancelHandler;
+use App\Handlers\Base\InstructionHandler;
 use App\Handlers\Base\NotFoundHandler;
 use App\Handlers\Base\StartHandler;
 use App\Handlers\Subscription\SubscriptionHandler;
@@ -22,6 +23,7 @@ class HandlerFactory
     {
         return match (true) {
             StartHandler::validate($dto)         => new StartHandler($dto),
+            InstructionHandler::validate($dto)   => new InstructionHandler($dto),
             DepNavigationHandler::validate($dto) => new DepNavigationHandler($dto),
             ArrNavigationHandler::validate($dto) => new ArrNavigationHandler($dto),
             DateMonthHandler::validate($dto)     => new DateMonthHandler($dto),
