@@ -53,17 +53,14 @@ final readonly class SuccessHandler extends Add
         $dep = $this->getAirportByCode($this->dep, $airports);
         $arr = $this->getAirportByCode($this->arr, $airports);
 
-        $this->telegram->send(
-            $this->method,
-            $data = $this->getMessageData($dep, $arr),
-        );
+        $this->telegram->send($this->method, $this->getMessageData());
 
         $subscriptionId = $this->createSubscription();
         $prices = $this->getPrices($subscriptionId);
         $this->priceRepository->createPrices($prices);
 
         $minPrice = $this->getMinPrice($prices);
-        $this->sendPriceToMessage($minPrice, $data['text']);
+        $this->sendPriceToMessage($dep, $arr, $minPrice);
     }
 
     /**
@@ -84,21 +81,12 @@ final readonly class SuccessHandler extends Add
         $this->date = "$this->year-$this->month-$this->day";
     }
 
-    private function getMessageData(Airport $dep, Airport $arr): array
+    private function getMessageData(): array
     {
-        $text = <<<TEXT
-        Подписка успешно активирована ✅️
-        Теперь вам будут приходить уведомления об изменении цен!
-        
-        🛫 Город отправления: $dep->title ($dep->code)
-        🛬 Город прибытия: $arr->title ($arr->code)
-        Дата вылета: $this->day.$this->month.$this->year
-        TEXT;
-
         return [
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
-            'text'       => $text,
+            'text'       => "Идет создание подписки...",
         ];
     }
 
@@ -131,10 +119,19 @@ final readonly class SuccessHandler extends Add
         return $prices ? min(array_column($prices, 'price')) : null;
     }
 
-    private function sendPriceToMessage(?float $minPrice, string $text): void
+    private function sendPriceToMessage(Airport $dep, Airport $arr, ?float $minPrice): void
     {
         if ($minPrice) {
-            $text .= "\n\n💰Текущая цена на рейс: $minPrice ₽";
+            $text = <<<TEXT
+            Подписка успешно активирована ✅️
+            Теперь вам будут приходить уведомления об изменении цен!
+            
+            🛫 Город отправления: $dep->title ($dep->code)
+            🛬 Город прибытия: $arr->title ($arr->code)
+            Дата вылета: $this->day.$this->month.$this->year
+            
+            💰Текущая цена на рейс: $minPrice ₽
+            TEXT;
         } else {
             $text = <<<TEXT
             Упс! 😬
