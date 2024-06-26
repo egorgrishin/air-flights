@@ -88,7 +88,8 @@ final readonly class SuccessHandler extends Add
     private function getMessageData(Airport $dep, Airport $arr): array
     {
         $text = <<<TEXT
-        Подписка успешно активирована!
+        Подписка успешно активирована ✅️
+        Теперь вам будут приходить уведомления об изменении цен!
         🛫 Город отправления: $dep->title ($dep->code)
         🛬 Город прибытия: $arr->title ($arr->code)
         Дата вылета: $this->day.$this->month.$this->year
@@ -135,7 +136,7 @@ final readonly class SuccessHandler extends Add
         $this->telegram->send($this->method, [
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
-            'text'       => $text . "\nЦена {$minPrice}р",
+            'text'       => $text . "\n💰Текущая цена на рейс: $minPrice&nbsp;₽",
         ]);
     }
 
