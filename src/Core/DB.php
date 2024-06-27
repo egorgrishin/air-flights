@@ -9,6 +9,9 @@ final class DB
 {
     private static ?PDO $instance = null;
 
+    /**
+     * Возвращает объект PDO
+     */
     public static function getPdo(): PDO
     {
         if (self::$instance === null) {
@@ -17,6 +20,9 @@ final class DB
         return self::$instance;
     }
 
+    /**
+     * Подключается к базе данных MySQL
+     */
     private static function connect(): void
     {
         $host = Container::env()->get('DB_HOST');

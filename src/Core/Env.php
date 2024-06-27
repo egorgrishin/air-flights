@@ -12,11 +12,17 @@ final class Env
         $this->load();
     }
 
+    /**
+     * Возвращает значение env переменной
+     */
     public function get(string $key, mixed $default = null): mixed
     {
         return $this->params[$key] ?? $default;
     }
 
+    /**
+     * Читает .env файл и сохраняет его переменные
+     */
     public function load(): void
     {
         $path = Helper::basePath('.env');

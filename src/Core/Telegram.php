@@ -18,6 +18,9 @@ final class Telegram
         ]);
     }
 
+    /**
+     * Отправляет запрос в телеграм
+     */
     public function send(TelegramMethod $method, array $data): void
     {
         try {
@@ -33,6 +36,9 @@ final class Telegram
         }
     }
 
+    /**
+     * Возвращает URI для отправления запросов в Telegram
+     */
     private function getUri(): string
     {
         $token = Container::env()->get('TG_TOKEN');

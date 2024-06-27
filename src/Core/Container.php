@@ -15,6 +15,9 @@ final class Container
     private static ?PDO $pdo = null;
     private static ?Logger $logger = null;
 
+    /**
+     * Возвращает объект PDO
+     */
     public static function pdo(): PDO
     {
         if (self::$pdo === null) {
@@ -23,6 +26,9 @@ final class Container
         return self::$pdo;
     }
 
+    /**
+     * Возвращает объект Env
+     */
     public static function env(): Env
     {
         if (self::$env === null) {
@@ -31,6 +37,9 @@ final class Container
         return self::$env;
     }
 
+    /**
+     * Возвращает объект Logger
+     */
     public static function logger(): Logger
     {
         if (self::$logger === null) {
@@ -39,6 +48,9 @@ final class Container
         return self::$logger;
     }
 
+    /**
+     * Создает объект Logger
+     */
     private static function setLogger(): void
     {
         $logger = new Logger('app');
