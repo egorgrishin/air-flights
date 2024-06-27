@@ -72,7 +72,7 @@ final readonly class SubscriptionHandler extends Handler
      */
     private function getMessageData(array $subscriptions, int $subsCount): array
     {
-        $text = "✅️ Активные подписки:\n";
+        $text = "✅️ Активные подписки:\n\n";
         for ($i = 0; $i < count($subscriptions); $i++) {
             $num = $i + $this->offset + 1;
             $subscription = $subscriptions[$i];
