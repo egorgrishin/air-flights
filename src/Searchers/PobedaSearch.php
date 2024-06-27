@@ -13,8 +13,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class PobedaSearch implements SearcherContract
 {
-    public const CODE = 'Pobeda';
-    private const URI = 'https://ticket.pobeda.aero/websky/json/search-variants-mono-brand-cartesian';
+    public const  CODE = 'Pobeda';
+    private const URI  = 'https://ticket.pobeda.aero/websky/json/search-variants-mono-brand-cartesian';
 
     /**
      * Возвращает код авиакомпании
@@ -52,7 +52,7 @@ class PobedaSearch implements SearcherContract
                 'destination-city-code' => [$arr],
                 'adultsCount'           => 1,
             ],
-            'headers' => [
+            'headers'     => [
                 'Accept' => 'application/json',
             ],
         ]);

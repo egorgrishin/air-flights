@@ -66,26 +66,15 @@ final readonly class SubscriptionHandler extends Handler
     }
 
     /**
-     * @param Subscription[] $subscriptions
-     * @param int $subsCount
-     * @return array
+     * Возвращает данные для отправки сообщения в Telegram
      */
     private function getMessageData(array $subscriptions, int $subsCount): array
     {
-        $text = "✅️ Активные подписки:\n\n";
-        for ($i = 0; $i < count($subscriptions); $i++) {
-            $num = $i + $this->offset + 1;
-            $subscription = $subscriptions[$i];
-            $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
-            $text .= "$num. $date, $subscription->depTitle — $subscription->arrTitle";
-            $text .= ($subscription->minPrice ? ", {$subscription->minPrice}р.\n\n" : "\n\n");
-        }
-        $text .= "❗️ Если хочешь удалить одну из подписок, просто нажми на ее номер, и она исчезнет";
 
         return [
             'chat_id'      => $this->fromId,
             'message_id'   => $this->messageId,
-            'text'         => $text,
+            'text'         => $this->getMessageText($subscriptions),
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getSubsButtons($subscriptions),
@@ -97,13 +86,36 @@ final readonly class SubscriptionHandler extends Handler
     }
 
     /**
-     * @param Subscription[] $subs
+     * Возвращает текст сообщения со списком подписок
+     *
+     * @param Subscription[] $subscriptions
+     * @return string
+     */
+    private function getMessageText(array $subscriptions): string
+    {
+        $text = "✅️ Активные подписки:\n\n";
+        for ($i = 0; $i < count($subscriptions); $i++) {
+            $num = $i + $this->offset + 1;
+            $subscription = $subscriptions[$i];
+            $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
+            $text .= "$num. $date, $subscription->depTitle — $subscription->arrTitle";
+            $text .= ($subscription->minPrice ? ", {$subscription->minPrice}р.\n\n" : "\n\n");
+        }
+        $text .= "❗️ Если хочешь удалить одну из подписок, просто нажми на ее номер, и она исчезнет";
+
+        return $text;
+    }
+
+    /**
+     * Возвращает массив кнопок клавиатуры для удаления сообщений
+     *
+     * @param Subscription[] $subscriptions
      * @return array
      */
-    private function getSubsButtons(array $subs): array
+    private function getSubsButtons(array $subscriptions): array
     {
         $buttons = [];
-        for ($i = 0; $i < count($subs); $i++) {
+        for ($i = 0; $i < count($subscriptions); $i++) {
             $num = $i + $this->offset + 1;
             $row = intdiv($i, 4);
             if (empty($buttons[$row])) {
@@ -111,12 +123,15 @@ final readonly class SubscriptionHandler extends Handler
             }
             $buttons[$row][] = [
                 'text'          => $num,
-                'callback_data' => "$this->selfState:$this->offset:{$subs[$i]->id}",
+                'callback_data' => "$this->selfState:$this->offset:{$subscriptions[$i]->id}",
             ];
         }
         return $buttons;
     }
 
+    /**
+     * Возвращает кнопки для постраничной навигации
+     */
     private function getNavigationButtons(int $subsCount): array
     {
         $buttons = [];
@@ -137,6 +152,9 @@ final readonly class SubscriptionHandler extends Handler
         return $buttons;
     }
 
+    /**
+     * Возвращает массив кнопок навигации
+     */
     private function getMenuButtons(): array
     {
         return [

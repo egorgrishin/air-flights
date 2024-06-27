@@ -12,10 +12,10 @@ use Throwable;
 
 abstract readonly class Handler implements HandlerContract
 {
-    protected Telegram $telegram;
+    protected Telegram       $telegram;
     protected TelegramMethod $method;
-    protected string $fromId;
-    protected ?int $messageId;
+    protected string         $fromId;
+    protected ?int           $messageId;
 
     public function __construct(DtoContract $dto)
     {

@@ -11,8 +11,8 @@ use PDO;
 
 final class Container
 {
-    private static ?Env $env = null;
-    private static ?PDO $pdo = null;
+    private static ?Env    $env    = null;
+    private static ?PDO    $pdo    = null;
     private static ?Logger $logger = null;
 
     /**

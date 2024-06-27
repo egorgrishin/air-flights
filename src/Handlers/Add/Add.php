@@ -8,6 +8,9 @@ use App\Handlers\Handler;
 
 abstract readonly class Add extends Handler
 {
+    /**
+     * Добавляет ноль перед номером дня или месяца, если они меньше 10
+     */
     protected function formatNum(string $num): string
     {
         return (int) $num < 10 ? '0' . (int) $num : $num;

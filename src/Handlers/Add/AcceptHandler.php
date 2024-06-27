@@ -93,10 +93,6 @@ final readonly class AcceptHandler extends Add
 
     /**
      * Возвращает аэропорт по его коду из массива аэропортов
-     *
-     * @param string $code
-     * @param Airport[] $airports
-     * @return Airport
      */
     private function getAirportByCode(string $code, array $airports): Airport
     {

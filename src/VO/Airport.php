@@ -10,5 +10,7 @@ final readonly class Airport
         public ?string $cityCode,
         public ?int    $sort,
         public string  $title,
-    ) {}
+    )
+    {
+    }
 }

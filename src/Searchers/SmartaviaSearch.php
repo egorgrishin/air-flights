@@ -13,8 +13,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class SmartaviaSearch implements SearcherContract
 {
-    public const CODE = 'SmartAvia';
-    private const URI = 'https://flysmartavia.com/search/calendar';
+    public const  CODE = 'SmartAvia';
+    private const URI  = 'https://flysmartavia.com/search/calendar';
 
     /**
      * Возвращает код авиакомпании

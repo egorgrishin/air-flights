@@ -10,12 +10,12 @@ use App\VO\Airport;
 
 final readonly class DepNavigationHandler extends Add
 {
-    private const SELF = State::SelectDep->value;
+    private const SELF        = State::SelectDep->value;
     private const SELF_ANALOG = State::StartSubscription->value;
-    private const NEXT = State::SelectArr->value;
+    private const NEXT        = State::SelectArr->value;
     private AirportRepository $repository;
-    private int $offset;
-    private int $limit;
+    private int               $offset;
+    private int               $limit;
 
     public function __construct(DtoContract $dto)
     {
@@ -42,10 +42,18 @@ final readonly class DepNavigationHandler extends Add
         $airports = $this->repository->get($this->offset, $this->limit);
         $airportsCount = $this->repository->count();
 
-        $this->telegram->send(
-            $this->method,
-            $this->getMessageData($airports, $airportsCount),
-        );
+        $this->telegram->send($this->method, [
+            'chat_id'      => $this->fromId,
+            'message_id'   => $this->messageId,
+            'text'         => "Выберите аэропорт отправления",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    ...$this->getAirportButtons($airports),
+                    $this->getNavigationButtons($airportsCount),
+                    $this->getMenuButtons(),
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -58,40 +66,22 @@ final readonly class DepNavigationHandler extends Add
         $this->offset = (int) $offset;
     }
 
-    private function getMessageData(array $airports, int $airportsCount): array
-    {
-        return [
-            'chat_id'      => $this->fromId,
-            'message_id'   => $this->messageId,
-            'text'         => "Выберите аэропорт отправления",
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    ...$this->getAirportButtons($airports),
-                    $this->getNavigationButtons($airportsCount),
-                    $this->getMenuButtons(),
-                ],
-            ],
-        ];
-    }
-
     /**
-     * @param Airport[] $airports
-     * @return array
+     * Возвращает кнопки с аэропортами
      */
     private function getAirportButtons(array $airports): array
     {
-        $buttons = [];
-        foreach ($airports as $airport) {
-            $buttons[] = [
-                [
-                    'text'          => $airport->title,
-                    'callback_data' => self::NEXT . ":$airport->code:0",
-                ],
-            ];
-        }
-        return $buttons;
+        return array_map(fn (Airport $airport) => [
+            [
+                'text'          => $airport->title,
+                'callback_data' => self::NEXT . ":$airport->code:0",
+            ],
+        ], $airports);
     }
 
+    /**
+     * Возвращает кнопки для постраничной навигации
+     */
     private function getNavigationButtons(int $airportsCount): array
     {
         $buttons = [];

@@ -6,6 +6,7 @@ namespace App\Handlers\Add;
 use App\Contracts\DtoContract;
 use App\Enums\State;
 use App\Repositories\AirportRepository;
+use App\VO\Airport;
 
 final readonly class ArrNavigationHandler extends Add
 {
@@ -64,20 +65,22 @@ final readonly class ArrNavigationHandler extends Add
         $this->offset = (int) $offset;
     }
 
+    /**
+     * Возвращает кнопки с аэропортами
+     */
     private function getAirportButtons(array $airports): array
     {
-        $buttons = [];
-        foreach ($airports as $airport) {
-            $buttons[] = [
-                [
-                    'text'          => $airport->title,
-                    'callback_data' => self::NEXT . ":$this->dep:$airport->code",
-                ],
-            ];
-        }
-        return $buttons;
+        return array_map(fn (Airport $airport) => [
+            [
+                'text'          => $airport->title,
+                'callback_data' => self::NEXT . ":$this->dep:$airport->code",
+            ],
+        ], $airports);
     }
 
+    /**
+     * Возвращает кнопки для постраничной навигации
+     */
     private function getNavigationButtons(int $airportsCount): array
     {
         $navButtons = [];

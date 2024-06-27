@@ -8,9 +8,9 @@ use App\Enums\State;
 
 final readonly class DateMonthHandler extends Add
 {
-    private const PREV = State::SelectArr->value;
-    private const SELF = State::SelectMonth->value;
-    private const NEXT = State::SelectDay->value;
+    private const PREV   = State::SelectArr->value;
+    private const SELF   = State::SelectMonth->value;
+    private const NEXT   = State::SelectDay->value;
     private const MONTHS = [
         'Декабрь',
         'Февраль',
@@ -65,6 +65,9 @@ final readonly class DateMonthHandler extends Add
         [, $this->dep, $this->arr] = $data;
     }
 
+    /**
+     * Возвращает массив кнопок - список месяцев
+     */
     private function getButtons(): array
     {
         $buttons = [];

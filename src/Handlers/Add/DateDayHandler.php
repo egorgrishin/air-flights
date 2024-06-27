@@ -17,11 +17,6 @@ final readonly class DateDayHandler extends Add
     private string $month;
     private string $year;
 
-    public function __construct(DtoContract $dto)
-    {
-        parent::__construct($dto);
-    }
-
     /**
      * Проверяет, должен ли обработчик обрабатывать запрос
      */
@@ -42,7 +37,7 @@ final readonly class DateDayHandler extends Add
             'text'         => "Выберите день",
             'reply_markup' => [
                 'inline_keyboard' => [
-                    ...$this->getButtons(),
+                    ...$this->getCalendarButtons(),
                     $this->getMenuButtons(),
                 ],
             ],
@@ -65,35 +60,38 @@ final readonly class DateDayHandler extends Add
         $this->month = $this->formatNum($month);
     }
 
-    private function getButtons(): array
+    /**
+     * Возвращает массив кнопок - календарь в виде клавиатуры
+     */
+    private function getCalendarButtons(): array
     {
-        $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
-        $buttons = [
-            $this->getCalendarHeader(),
-        ];
-
         $tomorrow = new DateTime('tomorrow');
+        $daysCount = cal_days_in_month(CAL_GREGORIAN, (int) $this->month, (int) $this->year);
+        $buttons = [$this->getCalendarHeader()];
         $weekNum = 1;
-        for ($i = 0; $i < $daysCount; $i++) {
-            $day = $i + 1;
+
+        for ($day = 1; $day <= $daysCount; $day++) {
             $dt = DateTime::createFromFormat('Y-m-j H:i', "$this->year-$this->month-$day 00:00");
+            // Номер дня недели
             $dayNum = (int) $dt->format('N');
             if (empty($buttons[$weekNum])) {
                 $buttons[$weekNum] = [];
             }
 
-            // Ставим кресты на днях из прошлого месяца
-            if ($i === 0 && $weekNum === 1) {
+            // Если это первый день и первая неделя, то на днях прошлого месяца ставим кресты
+            if ($day === 1 && $weekNum === 1) {
                 $this->addButtons(1, $dayNum, $weekNum, $buttons);
             }
 
+            // Добавляем день в календарь
             $buttons[$weekNum][] = $this->getDayData($dt, $tomorrow, $day);
 
-            // Если это последний день месяца, то ставим кресты на днях следующего месяца
-            if ($i === $daysCount - 1) {
+            // Если это последний день месяца, то на днях следующего месяца ставим кресты
+            if ($day === $daysCount) {
                 $this->addButtons($dayNum + 1, 8, $weekNum, $buttons);
             }
 
+            // Если день - воскресенье, то увеличиваем номер неделеи
             if ($dayNum === 7) {
                 $weekNum++;
             }
@@ -102,6 +100,9 @@ final readonly class DateDayHandler extends Add
         return $buttons;
     }
 
+    /**
+     * Возвращает массив кнопок - заголовок календаря
+     */
     private function getCalendarHeader(): array
     {
         $days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -115,6 +116,9 @@ final readonly class DateDayHandler extends Add
         return $buttons;
     }
 
+    /**
+     * Добавляет кресты в дни, попадающие в диапазон
+     */
     private function addButtons(int $start, int $end, int $weekNum, array &$buttons): void
     {
         for ($j = $start; $j < $end; $j++) {
@@ -125,6 +129,11 @@ final readonly class DateDayHandler extends Add
         }
     }
 
+    /**
+     * Возвращает день в виде кнопки для Telegram'а.
+     * Если этот день недоступен - возвращает крест.
+     * Если еще не прошел - возвращает сам день.
+     */
     private function getDayData(DateTime $dt, DateTime $tomorrow, int $day): array
     {
         return $dt <= $tomorrow ? [

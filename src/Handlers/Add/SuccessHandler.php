@@ -49,17 +49,17 @@ final readonly class SuccessHandler extends Add
      */
     public function process(): void
     {
+        $this->telegram->send($this->method, $this->getMessageData());
+
         $airports = $this->airportRepository->getByCode([$this->dep, $this->arr]);
         $dep = $this->getAirportByCode($this->dep, $airports);
         $arr = $this->getAirportByCode($this->arr, $airports);
-
-        $this->telegram->send($this->method, $this->getMessageData());
-
         $subscriptionId = $this->createSubscription();
+
         $prices = $this->getPrices($subscriptionId);
         $this->priceRepository->createPrices($prices);
-
         $minPrice = $this->getMinPrice($prices);
+
         $this->sendPriceToMessage($dep, $arr, $minPrice);
     }
 
@@ -81,6 +81,10 @@ final readonly class SuccessHandler extends Add
         $this->date = "$this->year-$this->month-$this->day";
     }
 
+    /**
+     * Возвращает содержимое сообщения, которое будет отображено
+     * во время создания подписки и получения цен на авиабилеты
+     */
     private function getMessageData(): array
     {
         return [
@@ -90,12 +94,18 @@ final readonly class SuccessHandler extends Add
         ];
     }
 
+    /**
+     * Возвращает аэропорт по его коду из массива аэропортов
+     */
     private function getAirportByCode(string $code, array $airports): Airport
     {
         $airports = array_filter($airports, fn (Airport $airport) => $airport->code === $code);
         return array_values($airports)[0];
     }
 
+    /**
+     * Добавляет подписку в базу данных
+     */
     private function createSubscription(): int
     {
         $subscription = new Subscription(
@@ -107,18 +117,27 @@ final readonly class SuccessHandler extends Add
         return $this->subscriptionsRepository->create($subscription);
     }
 
+    /**
+     * Получает цены от авиакомпаний и возвращает их
+     */
     private function getPrices(int $subscriptionId): array
     {
         $dt = DateTime::createFromFormat('Y-m-d', $this->date);
         return (new GetPriceService())->run($subscriptionId, $this->dep, $this->arr, $dt);
     }
 
+    /**
+     * Возвращает минимальную цену из списка
+     */
     private function getMinPrice(array $prices): ?float
     {
         $prices = array_filter($prices, fn (Price $price) => $price->price !== null);
         return $prices ? min(array_column($prices, 'price')) : null;
     }
 
+    /**
+     * Отправляет сообщение с минимальной ценой на билеты.
+     */
     private function sendPriceToMessage(Airport $dep, Airport $arr, ?float $minPrice): void
     {
         if ($minPrice) {
