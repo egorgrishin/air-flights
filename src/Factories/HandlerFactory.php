@@ -19,6 +19,9 @@ use App\Handlers\Subscription\SubscriptionHandler;
 
 class HandlerFactory
 {
+    /**
+     * Возвращает обработчик, который подходит для запроса
+     */
     public static function make(DtoContract $dto): HandlerContract
     {
         return match (true) {

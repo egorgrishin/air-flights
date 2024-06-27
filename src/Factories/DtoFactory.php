@@ -10,6 +10,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class DtoFactory
 {
+    /**
+     * Возвращает DTO, сгенерированный из объекта Request
+     */
     public static function make(Request $request): DtoContract
     {
         $body = (array) $request->getParsedBody();
@@ -20,6 +23,9 @@ class DtoFactory
         };
     }
 
+    /**
+     * Проверяет, что пользователь отправил текстовое сообщение
+     */
     private static function isTextMessage(array $body): bool
     {
         return !empty($body['message'])
@@ -27,6 +33,9 @@ class DtoFactory
             && !empty($body['message']['text']);
     }
 
+    /**
+     * Проверяет, что пользователь нажал на кнопку inline-клавиатуры
+     */
     private static function isCallback(array $body): bool
     {
         return !empty($body['callback_query'])
@@ -36,6 +45,9 @@ class DtoFactory
             && !empty($body['callback_query']['id']);
     }
 
+    /**
+     * Возвращает сымитированное текстовое DTO, на котором сработает только обработчик 404
+     */
     private static function makeTextDto404(): TextDto
     {
         return new TextDto([
