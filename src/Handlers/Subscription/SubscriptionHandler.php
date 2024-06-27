@@ -22,7 +22,7 @@ final readonly class SubscriptionHandler extends Handler
     {
         $this->repository = new SubscriptionsRepository();
         $this->selfState = State::SubsSelect->value;
-        $this->limit = 10;
+        $this->limit = 8;
         parent::__construct($dto);
     }
 
@@ -104,7 +104,7 @@ final readonly class SubscriptionHandler extends Handler
         $buttons = [];
         for ($i = 0; $i < count($subs); $i++) {
             $num = $i + $this->offset + 1;
-            $row = intdiv($i, 2);
+            $row = intdiv($i, 4);
             if (empty($buttons[$row])) {
                 $buttons[$row] = [];
             }
