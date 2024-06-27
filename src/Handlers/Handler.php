@@ -13,7 +13,6 @@ use Throwable;
 
 abstract readonly class Handler implements HandlerContract
 {
-    protected DtoContract    $dto;
     protected Telegram       $telegram;
     protected TelegramMethod $method;
     protected string         $fromId;
@@ -22,7 +21,6 @@ abstract readonly class Handler implements HandlerContract
 
     public function __construct(DtoContract $dto)
     {
-        $this->dto = $dto;
         $this->telegram = new Telegram();
         $this->fromId = $dto->fromId;
         $this->parseDto($dto);

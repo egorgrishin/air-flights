@@ -49,7 +49,6 @@ final readonly class AcceptHandler extends Add
                 'text'       => "Такая подписка у вас уже есть. Измените настройки",
                 'show_alert' => true,
             ]);
-            (new DateDayHandler($this->dto))->process();
             return;
         }
 
