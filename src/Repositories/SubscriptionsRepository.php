@@ -160,4 +160,30 @@ class SubscriptionsRepository
             ->prepare($sql)
             ->execute([$id, $chatId]);
     }
+
+    /**
+     * Проверяет, что подписка с данными настройками у пользователя уже существует
+     *
+     * @param string $chatId
+     * @param string $dep
+     * @param string $arr
+     * @param string $date
+     * @return bool
+     */
+    public function isSubscriptionExists(string $chatId, string $dep, string $arr, string $date): bool
+    {
+        $sql = <<<SQL
+            SELECT 1
+            FROM subscriptions
+            WHERE is_active = 1
+              AND chat_id = ?
+              AND dep_code = ?
+              AND arr_code = ?
+              AND date = ?
+        SQL;
+
+        $stmt = Container::pdo()->prepare($sql);
+        $stmt->execute([$chatId, $dep, $arr, $date]);
+        return $stmt->fetchColumn() === 1;
+    }
 }

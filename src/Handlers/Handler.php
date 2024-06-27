@@ -13,6 +13,7 @@ use Throwable;
 
 abstract readonly class Handler implements HandlerContract
 {
+    protected DtoContract    $dto;
     protected Telegram       $telegram;
     protected TelegramMethod $method;
     protected string         $fromId;
@@ -21,6 +22,7 @@ abstract readonly class Handler implements HandlerContract
 
     public function __construct(DtoContract $dto)
     {
+        $this->dto = $dto;
         $this->telegram = new Telegram();
         $this->fromId = $dto->fromId;
         $this->parseDto($dto);
@@ -61,7 +63,7 @@ abstract readonly class Handler implements HandlerContract
     /**
      * Отправляет уведомление в Telegram об обработке запроса
      */
-    private function sendCallbackAnswer(array $data): void
+    protected function sendCallbackAnswer(array $data): void
     {
         if (empty($this->callbackQueryId)) {
             return;
@@ -71,8 +73,6 @@ abstract readonly class Handler implements HandlerContract
             $this->telegram->send(
                 TelegramMethod::SendAnswer,
                 ['callback_query_id' => $this->callbackQueryId] + $data,
-//                'text'              => "BBBBBBBBBBBBBBBBBBBBBBBB",
-//                'show_alert'        => true,
             );
         } catch (Throwable $exception) {
             Container::logger()->error($exception);

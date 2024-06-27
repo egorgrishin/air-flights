@@ -6,6 +6,7 @@ namespace App\Handlers\Add;
 use App\Contracts\DtoContract;
 use App\Enums\State;
 use App\Repositories\AirportRepository;
+use App\Repositories\SubscriptionsRepository;
 use App\VO\Airport;
 
 final readonly class AcceptHandler extends Add
@@ -13,16 +14,19 @@ final readonly class AcceptHandler extends Add
     private const PREV = State::SelectDay->value;
     private const SELF = State::AcceptMonitoring->value;
     private const NEXT = State::SuccessMonitoring->value;
-    private AirportRepository $repository;
+    private AirportRepository $airportRepository;
+    private SubscriptionsRepository $subscriptionsRepository;
     private string $dep;
     private string $arr;
     private string $month;
     private string $year;
     private string $day;
+    private string $date;
 
     public function __construct(DtoContract $dto)
     {
-        $this->repository = new AirportRepository();
+        $this->airportRepository = new AirportRepository();
+        $this->subscriptionsRepository = new SubscriptionsRepository();
         parent::__construct($dto);
     }
 
@@ -40,7 +44,16 @@ final readonly class AcceptHandler extends Add
      */
     public function process(): void
     {
-        $airports = $this->repository->getByCode([$this->dep, $this->arr]);
+        if ($this->isSubscriptionExists()) {
+            $this->sendCallbackAnswer([
+                'text'       => "Такая подписка у вас уже есть. Измените настройки",
+                'show_alert' => true,
+            ]);
+            (new DateDayHandler($this->dto))->process();
+            return;
+        }
+
+        $airports = $this->airportRepository->getByCode([$this->dep, $this->arr]);
         $dep = $this->getAirportByCode($this->dep, $airports);
         $arr = $this->getAirportByCode($this->arr, $airports);
 
@@ -66,6 +79,20 @@ final readonly class AcceptHandler extends Add
         ] = explode(':', $dto->data);
         $this->month = $this->formatNum($month);
         $this->day = $this->formatNum($day);
+        $this->date = "$this->year-$this->month-$this->day";
+    }
+
+    /**
+     * Проверяет, что подписка с данными настройками у пользователя уже есть
+     */
+    private function isSubscriptionExists(): bool
+    {
+        return $this->subscriptionsRepository->isSubscriptionExists(
+            $this->fromId,
+            $this->dep,
+            $this->arr,
+            $this->date,
+        );
     }
 
     /**
