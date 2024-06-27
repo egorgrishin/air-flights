@@ -22,7 +22,7 @@ final readonly class SubscriptionHandler extends Handler
     {
         $this->repository = new SubscriptionsRepository();
         $this->selfState = State::SubsSelect->value;
-        $this->limit = 25;
+        $this->limit = 10;
         parent::__construct($dto);
     }
 
@@ -77,7 +77,7 @@ final readonly class SubscriptionHandler extends Handler
             $num = $i + $this->offset + 1;
             $subscription = $subscriptions[$i];
             $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
-            $text .= "$num. $date,  $subscription->depTitle — $subscription->arrTitle";
+            $text .= "$num. $date, $subscription->depTitle — $subscription->arrTitle";
             $text .= ($subscription->minPrice ? ", {$subscription->minPrice}р.\n" : "\n");
         }
 
