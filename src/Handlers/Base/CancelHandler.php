@@ -27,6 +27,7 @@ final readonly class CancelHandler extends Handler
             'chat_id'    => $this->fromId,
             'message_id' => $this->messageId,
         ]);
+        $this->sendSuccessCallback();
     }
 
     /**

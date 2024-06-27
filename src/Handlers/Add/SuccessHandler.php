@@ -61,6 +61,7 @@ final readonly class SuccessHandler extends Add
         $minPrice = $this->getMinPrice($prices);
 
         $this->sendPriceToMessage($dep, $arr, $minPrice);
+        $this->sendSuccessCallback();
     }
 
     /**

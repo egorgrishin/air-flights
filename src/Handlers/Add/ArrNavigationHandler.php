@@ -54,6 +54,7 @@ final readonly class ArrNavigationHandler extends Add
                 ],
             ],
         ]);
+        $this->sendSuccessCallback();
     }
 
     /**

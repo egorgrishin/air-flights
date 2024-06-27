@@ -52,6 +52,7 @@ final readonly class SubscriptionHandler extends Handler
             $this->method,
             $this->getMessageData($subs, $subsCount)
         );
+        $this->sendSuccessCallback();
     }
 
     /**

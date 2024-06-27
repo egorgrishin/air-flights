@@ -54,6 +54,7 @@ final readonly class DepNavigationHandler extends Add
                 ],
             ],
         ]);
+        $this->sendSuccessCallback();
     }
 
     /**

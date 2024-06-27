@@ -48,6 +48,7 @@ final readonly class AcceptHandler extends Add
             $this->method,
             $this->getMessageData($dep, $arr),
         );
+        $this->sendSuccessCallback();
     }
 
     /**

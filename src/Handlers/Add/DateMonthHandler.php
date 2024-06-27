@@ -54,6 +54,7 @@ final readonly class DateMonthHandler extends Add
                 ],
             ],
         ]);
+        $this->sendSuccessCallback();
     }
 
     /**

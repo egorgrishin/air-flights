@@ -42,6 +42,7 @@ final readonly class DateDayHandler extends Add
                 ],
             ],
         ]);
+        $this->sendSuccessCallback();
     }
 
     /**

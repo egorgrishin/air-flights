@@ -17,6 +17,7 @@ abstract readonly class Handler implements HandlerContract
     protected TelegramMethod $method;
     protected string         $fromId;
     protected ?int           $messageId;
+    protected ?string        $callbackQueryId;
 
     public function __construct(DtoContract $dto)
     {
@@ -25,9 +26,9 @@ abstract readonly class Handler implements HandlerContract
         $this->parseDto($dto);
 
         if ($dto instanceof CallbackDto) {
-            $this->sendCallbackAnswer($dto->callbackQueryId);
             $this->method = TelegramMethod::Edit;
             $this->messageId = $dto->messageId;
+            $this->callbackQueryId = $dto->callbackQueryId;
         } else {
             $this->method = TelegramMethod::Send;
             $this->messageId = null;
@@ -52,19 +53,27 @@ abstract readonly class Handler implements HandlerContract
     /**
      * Отправляет уведомление в Telegram об успешном получении запроса
      */
-    private function sendCallbackAnswer(string $callbackQueryId): void
+    protected function sendSuccessCallback(): void
     {
+        $this->sendCallbackAnswer([]);
+    }
+
+    /**
+     * Отправляет уведомление в Telegram об обработке запроса
+     */
+    private function sendCallbackAnswer(array $data): void
+    {
+        if (empty($this->callbackQueryId)) {
+            return;
+        }
+
         try {
-            $this->telegram->send(TelegramMethod::SendAnswer, [
-                'callback_query_id' => $callbackQueryId,
-                'text'              => "BBBBBBBBBBBBBBBBBBBBBBBB",
-                'show_alert'        => true,
-            ]);
-            $this->telegram->send(TelegramMethod::SendAnswer, [
-                'callback_query_id' => $callbackQueryId,
-                'text'              => "AAAAAAAAAAAAAAAAAAAAAAAA",
-                'show_alert'        => true,
-            ]);
+            $this->telegram->send(
+                TelegramMethod::SendAnswer,
+                ['callback_query_id' => $this->callbackQueryId] + $data,
+//                'text'              => "BBBBBBBBBBBBBBBBBBBBBBBB",
+//                'show_alert'        => true,
+            );
         } catch (Throwable $exception) {
             Container::logger()->error($exception);
         }
