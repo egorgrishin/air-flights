@@ -5,6 +5,7 @@ namespace App\Handlers;
 
 use App\Contracts\DtoContract;
 use App\Contracts\HandlerContract;
+use App\Core\Container;
 use App\Core\Telegram;
 use App\Dto\CallbackDto;
 use App\Enums\TelegramMethod;
@@ -56,11 +57,16 @@ abstract readonly class Handler implements HandlerContract
         try {
             $this->telegram->send(TelegramMethod::SendAnswer, [
                 'callback_query_id' => $callbackQueryId,
-                'text'              => "Text Text HEADER 123!!!\n\nBodyyyyyyy X",
+                'text'              => "BBBBBBBBBBBBBBBBBBBBBBBB",
                 'show_alert'        => true,
             ]);
-        } catch (Throwable) {
-            //
+            $this->telegram->send(TelegramMethod::SendAnswer, [
+                'callback_query_id' => $callbackQueryId,
+                'text'              => "AAAAAAAAAAAAAAAAAAAAAAAA",
+                'show_alert'        => true,
+            ]);
+        } catch (Throwable $exception) {
+            Container::logger()->error($exception);
         }
     }
 }
