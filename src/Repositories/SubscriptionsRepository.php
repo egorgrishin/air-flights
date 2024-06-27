@@ -20,13 +20,15 @@ class SubscriptionsRepository
     public function getChatSubscriptions(string $chatId, int $offset, int $limit): array
     {
         $sql = <<<SQL
-            SELECT s.id, chat_id, dep_code, arr_code, date, p.min_price
+            SELECT s.id, chat_id, dep.title, arr.title, date, p.min_price
             FROM subscriptions s
             JOIN (
                 SELECT p.subscription_id, MIN(p.price) AS min_price
                 FROM prices p
                 GROUP BY p.subscription_id
             ) p ON s.id = p.subscription_id
+            JOIN airports dep ON s.dep_code = dep.code
+            JOIN airports arr ON s.arr_code = arr.code
             WHERE chat_id = :chatId AND is_active = 1
             ORDER BY date, s.id
             LIMIT :offset, :limit;
@@ -41,7 +43,14 @@ class SubscriptionsRepository
         return $stmt->fetchAll(
             PDO::FETCH_FUNC,
             function (int $id, string $chatId, string $dep, string $arr, string $date, ?float $minPrice): Subscription {
-                return new Subscription($chatId, $dep, $arr, $date, $id, minPrice: $minPrice);
+                return new Subscription(
+                    $chatId,
+                    $date,
+                    $id,
+                    minPrice: $minPrice,
+                    depTitle: $dep,
+                    arrTitle: $arr,
+                );
             },
         );
     }
@@ -65,7 +74,7 @@ class SubscriptionsRepository
             ->fetchAll(
                 PDO::FETCH_FUNC,
                 function (int $id, string $chatId, string $dep, string $arr, string $date): Subscription {
-                    return new Subscription($chatId, $dep, $arr, $date, $id);
+                    return new Subscription($chatId, $date, $id, $dep, $arr);
                 },
             );
     }

@@ -22,7 +22,7 @@ final readonly class SubscriptionHandler extends Handler
     {
         $this->repository = new SubscriptionsRepository();
         $this->selfState = State::SubsSelect->value;
-        $this->limit = 5;
+        $this->limit = 25;
         parent::__construct($dto);
     }
 
@@ -65,12 +65,21 @@ final readonly class SubscriptionHandler extends Handler
         $this->subsId = empty($data[2]) ? null : (int) $data[2];
     }
 
-    private function getMessageData(array $subs, int $subsCount): array
+    /**
+     * @param Subscription[] $subscriptions
+     * @param int $subsCount
+     * @return array
+     */
+    private function getMessageData(array $subscriptions, int $subsCount): array
     {
-        $text = <<<TEXT
-        ✅️ Активные подписки: 
-        ❗️ Если хочешь удалить одну из подписок, просто нажми на неё и она исчезнет
-        TEXT;
+        $text = "✅️ Активные подписки:\n";
+        for ($i = 0; $i < count($subscriptions); $i++) {
+            $num = $i + $this->offset;
+            $subscription = $subscriptions[$i];
+            $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
+            $text .= "$num. $date,  $subscription->depTitle — $subscription->arrTitle";
+            $text .= ($subscription->minPrice ? ", {$subscription->minPrice}р.\n" : "\n");
+        }
 
         return [
             'chat_id'      => $this->fromId,
@@ -78,7 +87,7 @@ final readonly class SubscriptionHandler extends Handler
             'text'         => $text,
             'reply_markup' => [
                 'inline_keyboard' => [
-                    ...$this->getSubsButtons($subs),
+                    ...$this->getSubsButtons($subscriptions),
                     $this->getNavigationButtons($subsCount),
                     $this->getMenuButtons(),
                 ],
@@ -93,13 +102,15 @@ final readonly class SubscriptionHandler extends Handler
     private function getSubsButtons(array $subs): array
     {
         $buttons = [];
-        foreach ($subs as $sub) {
-            $date = DateTime::createFromFormat('Y-m-d', $sub->date)->format('d.m.Y');
-            $buttons[] = [
-                [
-                    'text'          => "$date Санкт-Петербург — Челябинсккк {$sub->minPrice}р.",
-                    'callback_data' => "$this->selfState:$this->offset:$sub->id",
-                ],
+        for ($i = 0; $i < count($subs); $i++) {
+            $num = $i + $this->offset;
+            $row = intdiv($i, 5);
+            if (empty($buttons[$row])) {
+                $buttons[$row] = [];
+            }
+            $buttons[$row][] = [
+                'text'          => $num,
+                'callback_data' => "$this->selfState:$this->offset:{$subs[$i]->id}",
             ];
         }
         return $buttons;
@@ -129,7 +140,7 @@ final readonly class SubscriptionHandler extends Handler
     {
         return [
             [
-                'text'          => 'Обновить',
+                'text'          => 'Обновить 🔄',
                 'callback_data' => "$this->selfState:$this->offset",
             ],
         ];
