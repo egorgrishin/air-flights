@@ -80,6 +80,7 @@ final readonly class SubscriptionHandler extends Handler
             $text .= "$num. $date, $subscription->depTitle — $subscription->arrTitle";
             $text .= ($subscription->minPrice ? ", {$subscription->minPrice}р.\n\n" : "\n\n");
         }
+        $text .= "❗️ Если хочешь удалить одну из подписок, просто нажми на ее номер, и она исчезнет";
 
         return [
             'chat_id'      => $this->fromId,
