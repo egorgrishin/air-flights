@@ -78,7 +78,7 @@ final readonly class SubscriptionHandler extends Handler
             $subscription = $subscriptions[$i];
             $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
             $text .= "$num. $date, $subscription->depTitle — $subscription->arrTitle";
-            $text .= ($subscription->minPrice ? ", {$subscription->minPrice}р.\n" : "\n");
+            $text .= ($subscription->minPrice ? ", {$subscription->minPrice}р.\n\n" : "\n\n");
         }
 
         return [
