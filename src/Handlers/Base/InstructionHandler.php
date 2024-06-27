@@ -37,8 +37,16 @@ final readonly class InstructionHandler extends Handler
         TEXT;
 
         $this->telegram->send($this->method, [
-            'chat_id' => $this->fromId,
-            'text'    => $text,
+            'chat_id'      => $this->fromId,
+            'text'         => $text,
+            'reply_markup' => [
+                'inline_keyboard' => [[
+                    [
+                        'text'          => 'Закрыть ❌️',
+                        'callback_data' => State::CancelMonitoring->value,
+                    ]
+                ]],
+            ],
         ]);
     }
 
