@@ -100,9 +100,9 @@ final readonly class SuccessHandler extends Add
     {
         $subscription = new Subscription(
             $this->fromId,
-            $this->dep,
-            $this->arr,
             $this->date,
+            depCode: $this->dep,
+            arrCode: $this->arr,
         );
         return $this->subscriptionsRepository->create($subscription);
     }
