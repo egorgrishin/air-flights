@@ -74,7 +74,7 @@ final readonly class SubscriptionHandler extends Handler
     {
         $text = "✅️ Активные подписки:\n";
         for ($i = 0; $i < count($subscriptions); $i++) {
-            $num = $i + $this->offset;
+            $num = $i + $this->offset + 1;
             $subscription = $subscriptions[$i];
             $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
             $text .= "$num. $date,  $subscription->depTitle — $subscription->arrTitle";
@@ -103,7 +103,7 @@ final readonly class SubscriptionHandler extends Handler
     {
         $buttons = [];
         for ($i = 0; $i < count($subs); $i++) {
-            $num = $i + $this->offset;
+            $num = $i + $this->offset + 1;
             $row = intdiv($i, 5);
             if (empty($buttons[$row])) {
                 $buttons[$row] = [];
