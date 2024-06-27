@@ -104,7 +104,7 @@ final readonly class SubscriptionHandler extends Handler
         $buttons = [];
         for ($i = 0; $i < count($subs); $i++) {
             $num = $i + $this->offset + 1;
-            $row = intdiv($i, 5);
+            $row = intdiv($i, 2);
             if (empty($buttons[$row])) {
                 $buttons[$row] = [];
             }
