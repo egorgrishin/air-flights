@@ -57,6 +57,7 @@ abstract readonly class Handler implements HandlerContract
             $this->telegram->send(TelegramMethod::SendAnswer, [
                 'callback_query_id' => $callbackQueryId,
                 'text'              => "Text Text HEADER 123!!!\n\nBodyyyyyyy X",
+                'show_alert'        => true,
             ]);
         } catch (Throwable) {
             //
