@@ -45,7 +45,7 @@ final readonly class DepNavigationHandler extends Add
         $this->telegram->send($this->method, [
             'chat_id'      => $this->fromId,
             'message_id'   => $this->messageId,
-            'text'         => "Выберите аэропорт отправления",
+            'text'         => "● Укажите город отправления 🛫",
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getAirportButtons($airports),

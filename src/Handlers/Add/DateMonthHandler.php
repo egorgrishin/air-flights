@@ -46,7 +46,7 @@ final readonly class DateMonthHandler extends Add
         $this->telegram->send($this->method, [
             'chat_id'      => $this->fromId,
             'message_id'   => $this->messageId,
-            'text'         => "Выберите месяц",
+            'text'         => "● Укажите месяц 🗓",
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getButtons(),

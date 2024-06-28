@@ -34,7 +34,7 @@ final readonly class DateDayHandler extends Add
         $this->telegram->send($this->method, [
             'chat_id'      => $this->fromId,
             'message_id'   => $this->messageId,
-            'text'         => "Выберите день",
+            'text'         => "● Укажите день 📆",
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getCalendarButtons(),

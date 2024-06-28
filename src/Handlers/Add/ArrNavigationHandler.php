@@ -45,7 +45,7 @@ final readonly class ArrNavigationHandler extends Add
         $this->telegram->send($this->method, [
             'chat_id'      => $this->fromId,
             'message_id'   => $this->messageId,
-            'text'         => "Выберите аэропорт прибытия",
+            'text'         => "● Укажите город прибытия 🛬",
             'reply_markup' => [
                 'inline_keyboard' => [
                     ...$this->getAirportButtons($airports),

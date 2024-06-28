@@ -46,7 +46,7 @@ final readonly class AcceptHandler extends Add
     {
         if ($this->isSubscriptionExists()) {
             $this->sendCallbackAnswer([
-                'text'       => "Такая подписка у вас уже есть. Измените настройки",
+                'text'       => "Такая подписка у вас уже есть. Измените настройки.",
                 'show_alert' => true,
             ]);
             return;
