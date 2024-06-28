@@ -75,12 +75,17 @@ function checkPrices(Subscription $subscription, array $prices, array $oldPrices
     }
     $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
     $minPrice = min($prices);
+    $formattedPrice = number_format($minPrice, 0, ',', ' ');
     $telegram = new Telegram();
     // Старые цены могут быть удалены, если новые цены не будут получены с API
     if (empty($oldPrices)) {
         $text = <<<TEXT
-                $date. $subscription->depCode-$subscription->arrCode
-                Цена установлена - {$minPrice}р.
+                🗓 Дата: $date
+
+                ✈️ $subscription->depTitle — $subscription->arrTitle 
+
+                ✅ Цена установлена 
+                💵 $formattedPrice ₽
                 TEXT;
         $telegram->send(TelegramMethod::Send, [
             'chat_id' => $subscription->chatId,
@@ -95,10 +100,16 @@ function checkPrices(Subscription $subscription, array $prices, array $oldPrices
     }
     // Отправляем сообщение об изменении цены
     $verb = $minPrice < $minOldPrice ? 'уменьшилась' : 'увеличилась';
+    $emoji = $minPrice < $minOldPrice ? '📉' : '📈';
     $diff = abs($minPrice - $minOldPrice);
+    $formattedDiff = number_format($diff, 0, ',', ' ');
     $text = <<<TEXT
-            $date. $subscription->depCode-$subscription->arrCode
-            Цена $verb на {$diff}р. - {$minPrice}р.
+            🗓 Дата: $date
+
+            ✈️ $subscription->depTitle — $subscription->arrTitle 
+
+            $emoji Цена $verb на $formattedDiff ₽
+            💵 $formattedPrice ₽
             TEXT;
     $telegram->send(TelegramMethod::Send, [
         'chat_id' => $subscription->chatId,
