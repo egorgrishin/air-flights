@@ -56,15 +56,17 @@ class SubscriptionsRepository
     }
 
     /**
-     * Возвращает список всех активных подписок пользователя
+     * Возвращает список всех активных подписок
      *
      * @return Subscription[]
      */
     public function get(): array
     {
         $sql = <<<SQL
-            SELECT id, chat_id, dep_code, arr_code, date
-            FROM subscriptions
+            SELECT id, chat_id, dep_code, arr_code, date, dep.title, arr.title
+            FROM subscriptions s
+            JOIN airports dep ON s.dep_code = dep.code
+            JOIN airports arr ON s.arr_code = arr.code
             WHERE is_active = 1
             ORDER BY date, id
         SQL;
@@ -73,8 +75,16 @@ class SubscriptionsRepository
             ->query($sql)
             ->fetchAll(
                 PDO::FETCH_FUNC,
-                function (int $id, string $chatId, string $dep, string $arr, string $date): Subscription {
-                    return new Subscription($chatId, $date, $id, $dep, $arr);
+                function (int $id, string $chatId, string $dep, string $arr, string $date, string $depTitle, string $arrTitle): Subscription {
+                    return new Subscription(
+                        $chatId,
+                        $date,
+                        $id,
+                        $dep,
+                        $arr,
+                        depTitle: $dep,
+                        arrTitle: $arr,
+                    );
                 },
             );
     }
