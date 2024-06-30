@@ -11,6 +11,7 @@ use App\Searchers\PobedaSearch;
 use App\Searchers\SmartaviaSearch;
 use App\VO\Price;
 use DateTime;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Throwable;
 
@@ -39,11 +40,17 @@ class GetPriceService
     {
         $data = [];
         foreach (self::SEARCHERS as $searcher) {
-            $searcher = new $searcher();
+            try {
+                $searcher = new $searcher();
+                $price = $this->getSearcherPrice($searcher, $dep, $arr, $dt);
+            } catch (Throwable) {
+                continue;
+            }
+
             $data[] = new Price(
                 $searcher->getCode(),
                 $subscriptionId,
-                $this->getSearcherPrice($searcher, $dep, $arr, $dt),
+                $price,
             );
         }
         return $data;
@@ -52,6 +59,7 @@ class GetPriceService
     /**
      * Возвращает цену на билет для указанной подписки.
      * В случае неудачи обращения к API перезапускается
+     * @throws Exception
      */
     private function getSearcherPrice(SearcherContract $searcher, string $dep, string $arr, DateTime $dt): ?float
     {
@@ -65,6 +73,6 @@ class GetPriceService
                 return null;
             }
         }
-        return null;
+        throw new Exception();
     }
 }
