@@ -4,6 +4,7 @@ services:
   backend:
     ports:
       - "80:80"
+      - "9001:9001"
     build: .
     volumes:
       - .:/var/www/html
@@ -15,6 +16,7 @@ services:
       - flights
     depends_on:
       - mysql
+      - rabbitmq
   mysql:
     image: mysql:latest
     environment:
@@ -32,6 +34,22 @@ services:
       test: [ "CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}" ]
       retries: 3
       timeout: 5s
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: '${RABBIT_USER}'
+      RABBITMQ_DEFAULT_PASS: '${RABBIT_PASS}'
+    ports:
+      - '127.0.0.1:5672:5672'
+      - '127.0.0.1:15673:15672'
+    networks:
+      - flights
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+    networks:
+      - flights
 networks:
   flights:
     driver: bridge
