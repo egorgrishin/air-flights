@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Searchers;
 
 use App\Contracts\SearcherContract;
+use App\Core\Container;
 use App\Exceptions\SearcherParseError;
 use App\Exceptions\SearcherResponseError;
 use DateTime;
@@ -70,6 +71,7 @@ class PobedaSearch implements SearcherContract
         $headers = $response->getHeaders();
         $contentType = $headers['content-type'] ?? $headers['Content-Type'];
         if ($response->getStatusCode() !== 200 || in_array('text/html', $contentType)) {
+            Container::logger()->error($response->getBody()->getContents());
             throw new SearcherResponseError('Error Pobeda response');
         }
 
