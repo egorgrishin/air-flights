@@ -9,6 +9,7 @@ use App\Exceptions\SearcherResponseError;
 use DateTime;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 
 class PobedaSearch implements SearcherContract
@@ -44,7 +45,7 @@ class PobedaSearch implements SearcherContract
     {
         $client = new Client();
         return $client->post(self::URI, [
-            'form_params' => [
+            RequestOptions::FORM_PARAMS => [
                 'searchGroupId'         => 'standard',
                 'segmentsCount'         => 1,
                 'date'                  => [$dt->format('d.m.Y')],
@@ -52,8 +53,10 @@ class PobedaSearch implements SearcherContract
                 'destination-city-code' => [$arr],
                 'adultsCount'           => 1,
             ],
-            'headers'     => [
-                'Accept' => 'application/json',
+            RequestOptions::HEADERS     => [
+                'Accept'       => 'application/json',
+                'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
+                'User-Agent'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
             ],
         ]);
     }

@@ -9,6 +9,7 @@ use App\Exceptions\SearcherResponseError;
 use DateTime;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 
 class SmartaviaSearch implements SearcherContract
@@ -44,15 +45,16 @@ class SmartaviaSearch implements SearcherContract
     {
         $client = new Client();
         return $client->post(self::URI, [
-            'body'    => http_build_query([
+            RequestOptions::TIMEOUT => 30,
+            RequestOptions::BODY    => http_build_query([
                 'origin'              => $dep,
                 'destination'         => $arr,
                 'calendar_date_start' => $dt->format('Y-m-d'),
                 'calendar_date_end'   => $dt->format('Y-m-d'),
             ]),
-            'headers' => [
+            RequestOptions::HEADERS => [
                 "Accept"       => "application/json",
-                "Content-Type" => "application/x-www-form-urlencoded",
+                "Content-Type" => "application/x-www-form-urlencoded; charset=UTF-8",
             ],
         ]);
     }
