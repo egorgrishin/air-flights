@@ -126,6 +126,7 @@ $now = new DateTime();
 
 $callback = function (AMQPMessage $msg) {
     [$subscription, $oldPrices] = unserialize($msg->getBody());
+    Container::logger()->debug(serialize([$msg->getBody()]));
     $prices = getPrices($subscription);
     checkPrices($subscription, $prices, $oldPrices);
     savePrices($prices, $oldPrices);
