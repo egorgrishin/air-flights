@@ -44,6 +44,8 @@ class GetPriceService
                 $searcher = new $searcher();
                 $price = $this->getSearcherPrice($searcher, $dep, $arr, $dt);
             } catch (Throwable) {
+                $message = "5 retries: {$searcher->getCode()}, $dep, $arr, {$dt->format('Y-m-d')}";
+                Container::logger()->error($message);
                 continue;
             }
 
