@@ -25,7 +25,13 @@ function getPrices(Subscription $subscription): array
     global $redis;
     $key = "$subscription->depCode-$subscription->arrCode-$subscription->date";
     if ($redis->ttl($key) !== -2) {
-        return unserialize($redis->get($key));
+        $cached = unserialize($redis->get($key));
+        $prices = [];
+        /** @var Price $price */
+        foreach ($cached as $price) {
+            $prices[$price->companyCode] = new Price($price->companyCode, $subscription->id, $price->price);
+        }
+        return $prices;
     }
 
     $prices = (new GetPriceService())->run(
@@ -128,16 +134,6 @@ $callback = function (AMQPMessage $msg) {
     [$subscription, $oldPrices] = unserialize($msg->getBody());
     $prices = getPrices($subscription);
     checkPrices($subscription, $prices, $oldPrices);
-    if ($subscription->id == 74) {
-        Container::logger()->debug("\n\n\n--------------");
-        Container::logger()->debug(json_encode($subscription, JSON_PRETTY_PRINT));
-        Container::logger()->debug(json_encode($prices, JSON_PRETTY_PRINT));
-        Container::logger()->debug(json_encode($oldPrices, JSON_PRETTY_PRINT));
-        foreach ($prices as $price) {
-            Container::logger()->debug((string) empty($oldPrices[$price->companyCode]));
-        }
-        Container::logger()->debug("--------------\n\n\n");
-    }
     savePrices($prices, $oldPrices);
 };
 

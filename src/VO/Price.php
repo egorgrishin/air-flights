@@ -9,9 +9,7 @@ final readonly class Price
         public string $companyCode,
         public int    $subscriptionId,
         public ?float $price,
-    )
-    {
-    }
+    ) {}
 
     public function toArray(): array
     {
