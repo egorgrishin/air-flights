@@ -46,6 +46,7 @@ class PobedaSearch implements SearcherContract
     {
         $client = new Client();
         return $client->post(self::URI, [
+            RequestOptions::ALLOW_REDIRECTS => false,
             RequestOptions::FORM_PARAMS => [
                 'searchGroupId'         => 'standard',
                 'segmentsCount'         => 1,
