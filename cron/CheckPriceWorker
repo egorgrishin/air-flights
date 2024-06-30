@@ -133,6 +133,9 @@ $callback = function (AMQPMessage $msg) {
         Container::logger()->debug(json_encode($subscription, JSON_PRETTY_PRINT));
         Container::logger()->debug(json_encode($prices, JSON_PRETTY_PRINT));
         Container::logger()->debug(json_encode($oldPrices, JSON_PRETTY_PRINT));
+        foreach ($prices as $price) {
+            Container::logger()->debug((string) empty($oldPrices[$price->companyCode]));
+        }
         Container::logger()->debug("--------------\n\n\n");
     }
     savePrices($prices, $oldPrices);
