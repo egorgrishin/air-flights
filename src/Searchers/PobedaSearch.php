@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Searchers;
 
 use App\Contracts\SearcherContract;
-use App\Core\Container;
 use App\Exceptions\SearcherParseError;
 use App\Exceptions\SearcherResponseError;
 use DateTime;
@@ -47,7 +46,8 @@ class PobedaSearch implements SearcherContract
         $client = new Client();
         return $client->post(self::URI, [
             RequestOptions::ALLOW_REDIRECTS => false,
-            RequestOptions::FORM_PARAMS => [
+            RequestOptions::TIMEOUT         => 30,
+            RequestOptions::FORM_PARAMS     => [
                 'searchGroupId'         => 'standard',
                 'segmentsCount'         => 1,
                 'date'                  => [$dt->format('d.m.Y')],
@@ -55,7 +55,7 @@ class PobedaSearch implements SearcherContract
                 'destination-city-code' => [$arr],
                 'adultsCount'           => 1,
             ],
-            RequestOptions::HEADERS     => [
+            RequestOptions::HEADERS         => [
                 'Accept'       => 'application/json',
                 'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
                 'User-Agent'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
@@ -72,7 +72,6 @@ class PobedaSearch implements SearcherContract
         $headers = $response->getHeaders();
         $contentType = $headers['content-type'] ?? $headers['Content-Type'];
         if ($response->getStatusCode() !== 200 || in_array('text/html', $contentType)) {
-            Container::logger()->error($response->getBody()->getContents());
             throw new SearcherResponseError('Error Pobeda response');
         }
 

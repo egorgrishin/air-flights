@@ -45,8 +45,8 @@ class SmartaviaSearch implements SearcherContract
     {
         $client = new Client();
         return $client->post(self::URI, [
-            RequestOptions::TIMEOUT => 30,
-            RequestOptions::BODY    => http_build_query([
+            RequestOptions::TIMEOUT   => 30,
+            RequestOptions::BODY      => http_build_query([
                 'origin'              => $dep,
                 'destination'         => $arr,
                 'calendar_date_start' => $dt->format('Y-m-d'),

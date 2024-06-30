@@ -125,12 +125,10 @@ $channel->queue_declare('check_price', auto_delete: false);
 $now = new DateTime();
 
 $callback = function (AMQPMessage $msg) {
-    echo "Start\n";
     [$subscription, $oldPrices] = unserialize($msg->getBody());
     $prices = getPrices($subscription);
     checkPrices($subscription, $prices, $oldPrices);
     savePrices($prices, $oldPrices);
-    echo "End\n";
 };
 
 $channel->basic_qos(0, 1, false);
@@ -139,5 +137,5 @@ $channel->basic_consume('check_price', no_ack: true, callback: $callback);
 try {
     $channel->consume();
 } catch (Throwable $exception) {
-    dd($exception->getMessage());
+    Container::logger()->error($exception);
 }
