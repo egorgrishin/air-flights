@@ -131,6 +131,7 @@ $callback = function (AMQPMessage $msg) {
     if ($subscription->id == 74) {
         Container::logger()->debug("\n\n\n--------------");
         Container::logger()->debug(json_encode($subscription, JSON_PRETTY_PRINT));
+        Container::logger()->debug(json_encode($prices, JSON_PRETTY_PRINT));
         Container::logger()->debug(json_encode($oldPrices, JSON_PRETTY_PRINT));
         Container::logger()->debug("--------------\n\n\n");
     }
