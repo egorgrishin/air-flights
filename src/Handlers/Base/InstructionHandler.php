@@ -53,7 +53,5 @@ final readonly class InstructionHandler extends Handler
     /**
      * Сохраняет данные из DTO в свойства обработчика
      */
-    protected function parseDto(DtoContract $dto): void
-    {
-    }
+    protected function parseDto(DtoContract $dto): void {}
 }

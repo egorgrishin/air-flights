@@ -6,10 +6,10 @@ namespace App\Factories;
 use App\Contracts\DtoContract;
 use App\Contracts\HandlerContract;
 use App\Handlers\Add\AcceptHandler;
-use App\Handlers\Add\ArrNavigationHandler;
-use App\Handlers\Add\DateDayHandler;
-use App\Handlers\Add\DateMonthHandler;
-use App\Handlers\Add\DepNavigationHandler;
+use App\Handlers\Add\SelectArrHandler;
+use App\Handlers\Add\SelectDayHandler;
+use App\Handlers\Add\SelectMonthHandler;
+use App\Handlers\Add\SelectDepHandler;
 use App\Handlers\Add\SuccessHandler;
 use App\Handlers\Base\CancelHandler;
 use App\Handlers\Base\InstructionHandler;
@@ -25,17 +25,17 @@ class HandlerFactory
     public static function make(DtoContract $dto): HandlerContract
     {
         return match (true) {
-            StartHandler::validate($dto)         => new StartHandler($dto),
-            InstructionHandler::validate($dto)   => new InstructionHandler($dto),
-            DepNavigationHandler::validate($dto) => new DepNavigationHandler($dto),
-            ArrNavigationHandler::validate($dto) => new ArrNavigationHandler($dto),
-            DateMonthHandler::validate($dto)     => new DateMonthHandler($dto),
-            DateDayHandler::validate($dto)       => new DateDayHandler($dto),
-            AcceptHandler::validate($dto)        => new AcceptHandler($dto),
-            SuccessHandler::validate($dto)       => new SuccessHandler($dto),
-            CancelHandler::validate($dto)        => new CancelHandler($dto),
-            SubscriptionHandler::validate($dto)  => new SubscriptionHandler($dto),
-            default                              => new NotFoundHandler($dto),
+            StartHandler::validate($dto)        => new StartHandler($dto),
+            InstructionHandler::validate($dto)  => new InstructionHandler($dto),
+            SelectDepHandler::validate($dto)    => new SelectDepHandler($dto),
+            SelectArrHandler::validate($dto)    => new SelectArrHandler($dto),
+            SelectMonthHandler::validate($dto)  => new SelectMonthHandler($dto),
+            SelectDayHandler::validate($dto)    => new SelectDayHandler($dto),
+            AcceptHandler::validate($dto)       => new AcceptHandler($dto),
+            SuccessHandler::validate($dto)      => new SuccessHandler($dto),
+            CancelHandler::validate($dto)       => new CancelHandler($dto),
+            SubscriptionHandler::validate($dto) => new SubscriptionHandler($dto),
+            default                             => new NotFoundHandler($dto),
         };
     }
 }

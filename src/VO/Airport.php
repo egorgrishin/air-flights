@@ -6,11 +6,9 @@ namespace App\VO;
 final readonly class Airport
 {
     public function __construct(
-        public string  $code,
-        public ?string $cityCode,
-        public ?int    $sort,
-        public string  $title,
-    )
-    {
-    }
+        public ?string $code = null,
+        public ?string $cityCode = null,
+        public ?int    $sort = null,
+        public ?string $title = null,
+    ) {}
 }

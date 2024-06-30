@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum TelegramMethod: string
+enum Method: string
 {
     case Send       = 'sendMessage';
     case Edit       = 'editMessageText';

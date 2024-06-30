@@ -7,7 +7,7 @@ use App\Contracts\DtoContract;
 use App\Enums\State;
 use DateTime;
 
-final readonly class DateDayHandler extends Add
+final readonly class SelectDayHandler extends Add
 {
     private const PREV = State::SelectMonth->value;
     private const SELF = State::SelectDay->value;

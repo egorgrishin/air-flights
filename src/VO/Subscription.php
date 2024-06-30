@@ -6,9 +6,9 @@ namespace App\VO;
 final readonly class Subscription
 {
     public function __construct(
-        public string  $chatId,
-        public string  $date,
         public ?int    $id = null,
+        public ?string $chatId = null,
+        public ?string $date = null,
         public ?string $depCode = null,
         public ?string $arrCode = null,
         public ?bool   $isActive = null,
@@ -16,7 +16,5 @@ final readonly class Subscription
         public ?float  $minPrice = null,
         public ?string $depTitle = null,
         public ?string $arrTitle = null,
-    )
-    {
-    }
+    ) {}
 }

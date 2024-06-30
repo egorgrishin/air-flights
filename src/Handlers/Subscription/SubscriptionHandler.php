@@ -160,6 +160,10 @@ final readonly class SubscriptionHandler extends Handler
     {
         return [
             [
+                'text'          => 'Закрыть ❌️',
+                'callback_data' => State::CancelMonitoring->value,
+            ],
+            [
                 'text'          => 'Обновить 🔄',
                 'callback_data' => "$this->selfState:$this->offset",
             ],

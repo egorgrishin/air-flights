@@ -6,9 +6,9 @@ namespace App\VO;
 final readonly class Price
 {
     public function __construct(
-        public string $companyCode,
-        public int    $subscriptionId,
-        public ?float $price,
+        public ?string $companyCode = null,
+        public ?int    $subscriptionId = null,
+        public ?float  $price = null,
     ) {}
 
     public function toArray(): array

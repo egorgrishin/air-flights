@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Core;
 
-use App\Enums\TelegramMethod;
+use App\Enums\Method;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
@@ -21,7 +21,7 @@ final class Telegram
     /**
      * Отправляет запрос в телеграм
      */
-    public function send(TelegramMethod $method, array $data): void
+    public function send(Method $method, array $data): void
     {
         try {
             $this->client->post($method->value, [

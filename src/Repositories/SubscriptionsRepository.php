@@ -7,7 +7,7 @@ use App\Core\Container;
 use App\VO\Subscription;
 use PDO;
 
-class SubscriptionsRepository
+final class SubscriptionsRepository
 {
     /**
      * Возвращает список активных подписок пользователя с их минимальными ценами
@@ -44,9 +44,9 @@ class SubscriptionsRepository
             PDO::FETCH_FUNC,
             function (int $id, string $chatId, string $dep, string $arr, string $date, ?float $minPrice): Subscription {
                 return new Subscription(
-                    $chatId,
-                    $date,
-                    $id,
+                    id: $id,
+                    chatId: $chatId,
+                    date: $date,
                     minPrice: $minPrice,
                     depTitle: $dep,
                     arrTitle: $arr,
@@ -77,13 +77,13 @@ class SubscriptionsRepository
                 PDO::FETCH_FUNC,
                 function (int $id, string $chatId, string $dep, string $arr, string $date, string $depTitle, string $arrTitle): Subscription {
                     return new Subscription(
-                        $chatId,
-                        $date,
-                        $id,
-                        $dep,
-                        $arr,
-                        depTitle: $dep,
-                        arrTitle: $arr,
+                        id: $id,
+                        chatId: $chatId,
+                        date: $date,
+                        depCode: $dep,
+                        arrCode: $arr,
+                        depTitle: $depTitle,
+                        arrTitle: $arrTitle,
                     );
                 },
             );

@@ -15,8 +15,6 @@ class MainController
         $dto = DtoFactory::make($request);
         $handler = HandlerFactory::make($dto);
         $handler->process();
-
-        $response->getBody()->write("Hello world!");
         return $response;
     }
 }

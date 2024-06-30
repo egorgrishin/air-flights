@@ -12,7 +12,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 
-class PobedaSearch implements SearcherContract
+class PobedaSearcher implements SearcherContract
 {
     public const  CODE = 'Pobeda';
     private const URI  = 'https://ticket.pobeda.aero/websky/json/search-variants-mono-brand-cartesian';

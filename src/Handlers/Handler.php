@@ -8,14 +8,14 @@ use App\Contracts\HandlerContract;
 use App\Core\Container;
 use App\Core\Telegram;
 use App\Dto\CallbackDto;
-use App\Enums\TelegramMethod;
+use App\Enums\Method;
 use Throwable;
 
 abstract readonly class Handler implements HandlerContract
 {
-    protected Telegram       $telegram;
-    protected TelegramMethod $method;
-    protected string         $fromId;
+    protected Telegram $telegram;
+    protected Method   $method;
+    protected string   $fromId;
     protected ?int           $messageId;
     protected ?string        $callbackQueryId;
 
@@ -26,11 +26,11 @@ abstract readonly class Handler implements HandlerContract
         $this->parseDto($dto);
 
         if ($dto instanceof CallbackDto) {
-            $this->method = TelegramMethod::Edit;
+            $this->method = Method::Edit;
             $this->messageId = $dto->messageId;
             $this->callbackQueryId = $dto->callbackQueryId;
         } else {
-            $this->method = TelegramMethod::Send;
+            $this->method = Method::Send;
             $this->messageId = null;
         }
     }
@@ -69,7 +69,7 @@ abstract readonly class Handler implements HandlerContract
 
         try {
             $this->telegram->send(
-                TelegramMethod::SendAnswer,
+                Method::SendAnswer,
                 ['callback_query_id' => $this->callbackQueryId] + $data,
             );
         } catch (Throwable $exception) {

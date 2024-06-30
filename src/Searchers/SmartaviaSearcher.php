@@ -12,7 +12,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 
-class SmartaviaSearch implements SearcherContract
+class SmartaviaSearcher implements SearcherContract
 {
     public const  CODE = 'SmartAvia';
     private const URI  = 'https://flysmartavia.com/search/calendar';

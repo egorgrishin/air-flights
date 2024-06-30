@@ -6,9 +6,7 @@ namespace App\VO;
 final readonly class Company
 {
     public function __construct(
-        public string $code,
-        public string $title,
-    )
-    {
-    }
+        public ?string $code = null,
+        public ?string $title = null,
+    ) {}
 }

@@ -7,15 +7,15 @@ use App\Contracts\SearcherContract;
 use App\Core\Container;
 use App\Exceptions\SearcherParseError;
 use App\Exceptions\SearcherResponseError;
-use App\Searchers\PobedaSearch;
-use App\Searchers\SmartaviaSearch;
+use App\Searchers\PobedaSearcher;
+use App\Searchers\SmartaviaSearcher;
 use App\VO\Price;
 use DateTime;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Throwable;
 
-class GetPriceService
+final class GetPriceService
 {
     /**
      * Классы, осуществляющие получение цен из API авиакомпаний
@@ -23,8 +23,8 @@ class GetPriceService
      * @var class-string<SearcherContract>[]
      */
     private const SEARCHERS = [
-        PobedaSearch::class,
-        SmartaviaSearch::class,
+        PobedaSearcher::class,
+        SmartaviaSearcher::class,
     ];
 
     /**

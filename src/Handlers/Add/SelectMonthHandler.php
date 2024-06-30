@@ -6,7 +6,7 @@ namespace App\Handlers\Add;
 use App\Contracts\DtoContract;
 use App\Enums\State;
 
-final readonly class DateMonthHandler extends Add
+final readonly class SelectMonthHandler extends Add
 {
     private const PREV   = State::SelectArr->value;
     private const SELF   = State::SelectMonth->value;
