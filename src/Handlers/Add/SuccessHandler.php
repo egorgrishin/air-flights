@@ -57,7 +57,7 @@ final readonly class SuccessHandler extends Add
         $subscriptionId = $this->createSubscription();
 
         $prices = $this->getPrices($subscriptionId);
-        $this->priceRepository->createPrices($prices);
+        $this->priceRepository->createPrices(array_values($prices));
         $minPrice = $this->getMinPrice($prices);
 
         $this->sendPriceToMessage($dep, $arr, $minPrice);
