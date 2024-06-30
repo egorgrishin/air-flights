@@ -126,9 +126,14 @@ $now = new DateTime();
 
 $callback = function (AMQPMessage $msg) {
     [$subscription, $oldPrices] = unserialize($msg->getBody());
-    Container::logger()->debug(serialize([$msg->getBody()]));
     $prices = getPrices($subscription);
     checkPrices($subscription, $prices, $oldPrices);
+    if ($subscription->id == 74) {
+        Container::logger()->debug("\n\n\n--------------");
+        Container::logger()->debug(json_encode($subscription, JSON_PRETTY_PRINT));
+        Container::logger()->debug(json_encode($oldPrices, JSON_PRETTY_PRINT));
+        Container::logger()->debug("--------------\n\n\n");
+    }
     savePrices($prices, $oldPrices);
 };
 
