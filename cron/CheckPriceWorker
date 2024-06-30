@@ -25,13 +25,7 @@ function getPrices(Subscription $subscription): array
     global $redis;
     $key = "$subscription->depCode-$subscription->arrCode-$subscription->date";
     if ($redis->ttl($key) !== -2) {
-        $cached = unserialize($redis->get($key));
-        $prices = [];
-        /** @var Price $price */
-        foreach ($cached as $price) {
-            $prices[$price->companyCode] = new Price($price->companyCode, $subscription->id, $price->price);
-        }
-        return $prices;
+      return getPricesFromCache($subscription, $key);
     }
 
     $prices = (new GetPriceService())->run(
@@ -41,6 +35,32 @@ function getPrices(Subscription $subscription): array
         DateTime::createFromFormat('Y-m-d', $subscription->date),
     );
     $redis->setEx($key, 45, serialize($prices));
+    return $prices;
+}
+
+/**
+ * Возвращает массив цен на подписку из кэша (Redis)
+ * 
+ * @param Subscription $subscription
+ * @param string $key
+ * @return Price[]
+ * @throws RedisException
+ */
+function getPricesFromCache(Subscription $subscription, string $key): array
+{
+    global $redis;
+    /** @var Price[] $cached */
+    $cached = unserialize($redis->get($key));
+    $prices = [];
+    
+    foreach ($cached as $price) {
+        $prices[$price->companyCode] = new Price(
+            $price->companyCode,
+            $subscription->id,
+            $price->price,
+        );
+    }
+    
     return $prices;
 }
 
@@ -62,25 +82,11 @@ function checkPrices(Subscription $subscription, array $prices, array $oldPrices
         return;
     }
 
-
-    $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
     $minPrice = min($prices);
     $formattedPrice = number_format($minPrice, 0, ',', ' ');
-    $telegram = new Telegram();
     // Старые цены могут быть удалены, если новые цены не будут получены с API
     if (empty($oldPrices)) {
-        $text = <<<TEXT
-                🗓 Дата: $date
-
-                ✈️ $subscription->depTitle — $subscription->arrTitle 
-
-                ✅ Цена установлена 
-                💵 $formattedPrice ₽
-                TEXT;
-        $telegram->send(TelegramMethod::Send, [
-            'chat_id' => $subscription->chatId,
-            'text'    => $text,
-        ]);
+        sendSetPrice($subscription, $formattedPrice);
         return;
     }
 
@@ -89,18 +95,60 @@ function checkPrices(Subscription $subscription, array $prices, array $oldPrices
         return;
     }
     // Отправляем сообщение об изменении цены
+    sendUpdatePrice($subscription, $minPrice, $minOldPrice, $formattedPrice);
+}
+
+/**
+ * Отправляет сообщение об установлении цены на направление
+ *
+ * @param Subscription $subscription
+ * @param string $formattedPrice
+ * @return void
+ */
+function sendSetPrice(Subscription $subscription, string $formattedPrice): void
+{
+    $telegram = new Telegram();
+    $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
+    $text = <<<TEXT
+        🗓 Дата: $date
+
+        ✈️ $subscription->depTitle — $subscription->arrTitle 
+
+        ✅ Цена установлена 
+        💵 $formattedPrice ₽
+        TEXT;
+    $telegram->send(TelegramMethod::Send, [
+        'chat_id' => $subscription->chatId,
+        'text'    => $text,
+    ]);
+}
+
+/**
+ * Отправляет сообщение об изменении цены на направление
+ *
+ * @param Subscription $subscription
+ * @param float $minPrice
+ * @param float $minOldPrice
+ * @param string $formattedPrice
+ * @return void
+ */
+function sendUpdatePrice(Subscription $subscription, float $minPrice, float $minOldPrice, string $formattedPrice): void
+{
+    $telegram = new Telegram();
+    $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
     $verb = $minPrice < $minOldPrice ? 'уменьшилась' : 'увеличилась';
     $emoji = $minPrice < $minOldPrice ? '📉' : '📈';
     $diff = abs($minPrice - $minOldPrice);
     $formattedDiff = number_format($diff, 0, ',', ' ');
+
     $text = <<<TEXT
-            🗓 Дата: $date
+        🗓 Дата: $date
 
-            ✈️ $subscription->depTitle — $subscription->arrTitle 
+        ✈️ $subscription->depTitle — $subscription->arrTitle 
 
-            $emoji Цена $verb на $formattedDiff ₽
-            💵 $formattedPrice ₽
-            TEXT;
+        $emoji Цена $verb на $formattedDiff ₽
+        💵 $formattedPrice ₽
+        TEXT;
     $telegram->send(TelegramMethod::Send, [
         'chat_id' => $subscription->chatId,
         'text'    => $text,
