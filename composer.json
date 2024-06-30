@@ -5,7 +5,11 @@
     "slim/psr7": "^1.7",
     "ext-pdo": "*",
     "monolog/monolog": "^3.6",
-    "ext-calendar": "*"
+    "ext-calendar": "*",
+    "ext-curl": "*",
+    "ext-sockets": "*",
+    "php-amqplib/php-amqplib": "^3.6",
+    "ext-redis": "*"
   },
   "autoload": {
     "psr-4": {

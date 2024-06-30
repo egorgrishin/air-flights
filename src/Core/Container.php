@@ -8,12 +8,16 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
 use PDO;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use Redis as RedisClient;
 
 final class Container
 {
-    private static ?Env    $env    = null;
-    private static ?PDO    $pdo    = null;
-    private static ?Logger $logger = null;
+    private static ?Env                  $env    = null;
+    private static ?PDO                  $pdo    = null;
+    private static ?Logger               $logger = null;
+    private static ?AMQPStreamConnection $rabbit = null;
+    private static ?RedisClient          $redis  = null;
 
     /**
      * Возвращает объект PDO
@@ -49,6 +53,30 @@ final class Container
     }
 
     /**
+     * Возвращает объект AMQPStreamConnection
+     * @noinspection PhpUnhandledExceptionInspection
+     */
+    public static function rabbit(): AMQPStreamConnection
+    {
+        if (self::$rabbit === null) {
+            self::$rabbit = Rabbit::getConnection();
+        }
+        return self::$rabbit;
+    }
+
+    /**
+     * Возвращает объект Redis
+     * @noinspection PhpUnhandledExceptionInspection
+     */
+    public static function redis(): RedisClient
+    {
+        if (self::$redis === null) {
+            self::$redis = Redis::getRedis();
+        }
+        return self::$redis;
+    }
+
+    /**
      * Создает объект Logger
      */
     private static function setLogger(): void
@@ -64,5 +92,10 @@ final class Container
         ));
         $logger->pushHandler($handler);
         self::$logger = $logger;
+    }
+
+    public function __destruct()
+    {
+        echo('des');
     }
 }

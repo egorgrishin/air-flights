@@ -1,0 +1,143 @@
+#!/usr/bin/php
+<?php
+declare(strict_types=1);
+
+use App\Core\Container;
+use App\Core\Telegram;
+use App\Enums\TelegramMethod;
+use App\Repositories\PriceRepository;
+use App\Services\GetPriceService;
+use App\VO\Price;
+use App\VO\Subscription;
+use PhpAmqpLib\Message\AMQPMessage;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+/**
+ * Возвращает массив текущих цен на билеты. Результаты кэшируются в Redis на 45 секунд
+ *
+ * @param Subscription $subscription
+ * @return Price[]
+ * @throws RedisException
+ */
+function getPrices(Subscription $subscription): array
+{
+    global $redis;
+    $key = "$subscription->depCode-$subscription->arrCode-$subscription->date";
+    if ($redis->ttl($key) !== -2) {
+        return unserialize($redis->get($key));
+    }
+
+    $prices = (new GetPriceService())->run(
+        $subscription->id,
+        $subscription->depCode,
+        $subscription->arrCode,
+        DateTime::createFromFormat('Y-m-d', $subscription->date),
+    );
+    $redis->setEx($key, 45, serialize($prices));
+    return $prices;
+}
+
+/**
+ * Отправляет уведомление об изменении цены в Telegram
+ *
+ * @param Subscription $subscription
+ * @param Price[] $prices
+ * @param Price[] $oldPrices
+ * @return void
+ */
+function checkPrices(Subscription $subscription, array $prices, array $oldPrices): void
+{
+    $oldPrices = array_intersect_key($oldPrices, $prices);
+    $oldPrices = array_filter(array_column($oldPrices, 'price'));
+    $prices = array_filter(array_column($prices, 'price'));
+    // Если в данный момент нет цены, то отправлять уведомление не нужно
+    if (empty($prices)) {
+        return;
+    }
+
+
+    $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
+    $minPrice = min($prices);
+    $formattedPrice = number_format($minPrice, 0, ',', ' ');
+    $telegram = new Telegram();
+    // Старые цены могут быть удалены, если новые цены не будут получены с API
+    if (empty($oldPrices)) {
+        $text = <<<TEXT
+                🗓 Дата: $date
+
+                ✈️ $subscription->depTitle — $subscription->arrTitle 
+
+                ✅ Цена установлена 
+                💵 $formattedPrice ₽
+                TEXT;
+        $telegram->send(TelegramMethod::Send, [
+            'chat_id' => $subscription->chatId,
+            'text'    => $text,
+        ]);
+        return;
+    }
+
+    $minOldPrice = min($oldPrices);
+    if ($minPrice === $minOldPrice) {
+        return;
+    }
+    // Отправляем сообщение об изменении цены
+    $verb = $minPrice < $minOldPrice ? 'уменьшилась' : 'увеличилась';
+    $emoji = $minPrice < $minOldPrice ? '📉' : '📈';
+    $diff = abs($minPrice - $minOldPrice);
+    $formattedDiff = number_format($diff, 0, ',', ' ');
+    $text = <<<TEXT
+            🗓 Дата: $date
+
+            ✈️ $subscription->depTitle — $subscription->arrTitle 
+
+            $emoji Цена $verb на $formattedDiff ₽
+            💵 $formattedPrice ₽
+            TEXT;
+    $telegram->send(TelegramMethod::Send, [
+        'chat_id' => $subscription->chatId,
+        'text'    => $text,
+    ]);
+}
+
+/**
+ * Сохраняет новые цены в базу данных
+ *
+ * @param Price[] $prices
+ * @param Price[] $oldPrices
+ * @return void
+ */
+function savePrices(array $prices, array $oldPrices): void
+{
+    global $repository;
+    foreach ($prices as $price) {
+        empty($oldPrices[$price->companyCode])
+            ? $repository->createPrices([$price])
+            : $repository->updatePrice($price);
+    }
+}
+
+$repository = new PriceRepository();
+$redis = Container::redis();
+$channel = Container::rabbit()->channel();
+$channel->queue_declare('check_price', auto_delete: false);
+$now = new DateTime();
+
+$callback = function (AMQPMessage $msg) {
+    echo "Start\n";
+    [$subscription, $oldPrices] = unserialize($msg->getBody());
+    $prices = getPrices($subscription);
+    checkPrices($subscription, $prices, $oldPrices);
+    savePrices($prices, $oldPrices);
+    echo "End\n";
+};
+
+$channel->basic_qos(0, 1, false);
+$channel->basic_consume('check_price', no_ack: true, callback: $callback);
+
+try {
+    $channel->consume();
+} catch (Throwable $exception) {
+    dd($exception->getMessage());
+}

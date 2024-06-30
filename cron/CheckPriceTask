@@ -2,13 +2,12 @@
 <?php
 declare(strict_types=1);
 
-use App\Core\Telegram;
-use App\Enums\TelegramMethod;
+use App\Core\Container;
 use App\Repositories\PriceRepository;
 use App\Repositories\SubscriptionsRepository;
-use App\Services\GetPriceService;
 use App\VO\Price;
 use App\VO\Subscription;
+use PhpAmqpLib\Message\AMQPMessage;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -20,9 +19,9 @@ require __DIR__ . '/../vendor/autoload.php';
  */
 function getOldPrices(array $subscriptions): array
 {
-    global $priceRepository;
+    $repository = new PriceRepository();
     $subscriptionIds = array_column($subscriptions, 'id');
-    $prices = $subscriptionIds ? $priceRepository->get($subscriptionIds) : [];
+    $prices = $subscriptionIds ? $repository->get($subscriptionIds) : [];
     $data = array_fill_keys($subscriptionIds, []);
 
     foreach ($prices as $price) {
@@ -35,113 +34,19 @@ function getOldPrices(array $subscriptions): array
     return $data;
 }
 
-/**
- * Возвращает массив цен на билеты, кэшируя результаты запроса на время жизни скрипта
- * 
- * @param Subscription $subscription
- * @return array
- */
-function getPrices(Subscription $subscription): array
-{
-    global $temp;
-    $key = "$subscription->id.$subscription->depCode.$subscription->arrCode";
-    if (!empty($temp[$key])) {
-        return $temp[$key];
-    }
 
-    return $temp[$key] = (new GetPriceService())->run(
-        $subscription->id,
-        $subscription->depCode,
-        $subscription->arrCode,
-        DateTime::createFromFormat('Y-m-d', $subscription->date),
-    );
-}
+$channel = Container::rabbit()->channel();
+$channel->queue_declare('check_price', auto_delete: false);
 
-/**
- * Отправляет уведомление об изменении цены в Telegram
- *
- * @param Subscription $subscription
- * @param Price[] $prices
- * @param Price[] $oldPrices
- * @return void
- */
-function checkPrices(Subscription $subscription, array $prices, array $oldPrices): void
-{
-    $oldPrices = array_filter(array_column($oldPrices, 'price'));
-    $prices = array_filter(array_column($prices, 'price'));
-    // Если в данный момент нет цены, то отправлять уведомление не нужно
-    if (empty($prices)) {
-        return;
-    }
-    $date = DateTime::createFromFormat('Y-m-d', $subscription->date)->format('d.m.Y');
-    $minPrice = min($prices);
-    $formattedPrice = number_format($minPrice, 0, ',', ' ');
-    $telegram = new Telegram();
-    // Старые цены могут быть удалены, если новые цены не будут получены с API
-    if (empty($oldPrices)) {
-        $text = <<<TEXT
-                🗓 Дата: $date
-
-                ✈️ $subscription->depTitle — $subscription->arrTitle 
-
-                ✅ Цена установлена 
-                💵 $formattedPrice ₽
-                TEXT;
-        $telegram->send(TelegramMethod::Send, [
-            'chat_id' => $subscription->chatId,
-            'text'    => $text,
-        ]);
-        return;
-    }
-
-    $minOldPrice = min($oldPrices);
-    if ($minPrice === $minOldPrice) {
-        return;
-    }
-    // Отправляем сообщение об изменении цены
-    $verb = $minPrice < $minOldPrice ? 'уменьшилась' : 'увеличилась';
-    $emoji = $minPrice < $minOldPrice ? '📉' : '📈';
-    $diff = abs($minPrice - $minOldPrice);
-    $formattedDiff = number_format($diff, 0, ',', ' ');
-    $text = <<<TEXT
-            🗓 Дата: $date
-
-            ✈️ $subscription->depTitle — $subscription->arrTitle 
-
-            $emoji Цена $verb на $formattedDiff ₽
-            💵 $formattedPrice ₽
-            TEXT;
-    $telegram->send(TelegramMethod::Send, [
-        'chat_id' => $subscription->chatId,
-        'text'    => $text,
-    ]);
-}
-
-/**
- * Сохраняет новые цены в базу данных
- *
- * @param Price[] $prices
- * @param Price[] $oldPrices
- * @return void
- */
-function savePrices(array $prices, array $oldPrices): void
-{
-    global $priceRepository;
-    foreach ($prices as $price) {
-        empty($oldPrices[$price->companyCode])
-            ? $priceRepository->createPrices([$price])
-            : $priceRepository->updatePrice($price);
-    }
-}
-
-$temp = [];
-$subsRepository = new SubscriptionsRepository();
-$priceRepository = new PriceRepository();
-$subscriptions = $subsRepository->get();
+$subscriptions = (new SubscriptionsRepository())->get();
 $oldPrices = getOldPrices($subscriptions);
-
 foreach ($subscriptions as $subscription) {
-    $prices = getPrices($subscription);
-    checkPrices($subscription, $prices, $oldPrices[$subscription->id]);
-    savePrices($prices, $oldPrices[$subscription->id]);
+    $prices = $oldPrices[$subscription->id];
+    $message = new AMQPMessage(serialize([$subscription, $prices]));
+    $channel->basic_publish($message, '', 'check_price');
 }
+
+try {
+    $channel->close();
+    Container::rabbit()->close();
+} catch (Exception) {}

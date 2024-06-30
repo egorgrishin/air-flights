@@ -47,7 +47,7 @@ class GetPriceService
                 continue;
             }
 
-            $data[] = new Price(
+            $data[$searcher->getCode()] = new Price(
                 $searcher->getCode(),
                 $subscriptionId,
                 $price,
