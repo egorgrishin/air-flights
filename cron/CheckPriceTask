@@ -42,6 +42,7 @@ $subscriptions = (new SubscriptionsRepository())->get();
 $oldPrices = getOldPrices($subscriptions);
 foreach ($subscriptions as $subscription) {
     $prices = $oldPrices[$subscription->id];
+    Container::logger()->debug(serialize([$subscription, $prices]));
     $message = new AMQPMessage(serialize([$subscription, $prices]));
     $channel->basic_publish($message, '', 'check_price');
 }
